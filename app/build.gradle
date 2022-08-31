@@ -72,4 +72,9 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
+
+    compileOnly "io.ktor:ktor-client-core:$ktor_version"
+    compileOnly "io.ktor:ktor-client-okhttp:$ktor_version"
+    compileOnly "io.ktor:ktor-client-content-negotiation:$ktor_version"
+    compileOnly "io.ktor:ktor-serialization-kotlinx-json:$ktor_version"
 }
