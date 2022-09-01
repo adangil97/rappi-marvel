@@ -12,7 +12,7 @@ import androidx.room.Query
 interface SeriesDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(series: MarvelEntity)
+    suspend fun insert(vararg series: MarvelEntity)
 
     @Query("SELECT * FROM MarvelEntity WHERE type = :type")
     suspend fun getSeries(type: MarvelType = MarvelType.SERIES): List<MarvelEntity>
