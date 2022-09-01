@@ -7,7 +7,7 @@ import com.rappi.domain.series.dto.SerieDto
  */
 interface SeriesLocalDataSource {
 
-    suspend fun getSeries(): List<SerieDto>
+    suspend fun getSeries(offset: Int, limit: Int): List<SerieDto>
 
     suspend fun insertSeries(vararg series: SerieDto)
 

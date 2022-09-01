@@ -29,6 +29,10 @@ abstract class SeriesRemoteDataSource(
                     "hash",
                     hash
                 )
+                parameter(
+                    "orderBy",
+                    "modified"
+                )
             }.body()
             return response.data.results.map {
                 it.toSerieDto()

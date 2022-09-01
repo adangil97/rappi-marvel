@@ -8,4 +8,6 @@ sealed class ComicsEvent {
     data class OnGetComics(
         val page: Int = 0
     ) : ComicsEvent()
+
+    object OnClearSideEffect : ComicsEvent()
 }

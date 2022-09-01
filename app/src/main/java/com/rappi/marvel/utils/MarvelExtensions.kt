@@ -23,7 +23,8 @@ fun SerieDto.toMarvelEntity(): MarvelEntity =
         title = title,
         description = description,
         urlImage = urlImage,
-        type = MarvelType.SERIES
+        type = MarvelType.SERIES,
+        time = System.currentTimeMillis()
     )
 
 fun MarvelEntity.toComicDto(): ComicDto =
@@ -40,5 +41,6 @@ fun ComicDto.toMarvelEntity(): MarvelEntity =
         title = title,
         description = description,
         urlImage = urlImage,
-        type = MarvelType.COMICS
+        type = MarvelType.COMICS,
+        time = System.currentTimeMillis()
     )

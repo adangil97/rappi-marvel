@@ -3,7 +3,6 @@ package com.rappi.data.series.repositories
 import com.rappi.data.series.datasources.SeriesLocalDataSource
 import com.rappi.data.series.datasources.SeriesRemoteDataSource
 import com.rappi.domain.series.dto.SerieDto
-import com.rappi.domain.series.remote.Series
 
 /**
  * @author Adán Castillo.
@@ -21,9 +20,9 @@ class SeriesRepository(
         return try {
             val remoteSeries = seriesRemoteDataSource.getSeries(offset)
             seriesLocalDataSource.insertSeries(*remoteSeries.toTypedArray())
-            seriesLocalDataSource.getSeries()
+            seriesLocalDataSource.getSeries(offset, PAGE_SIZE)
         } catch (exception: Exception) {
-            seriesLocalDataSource.getSeries()
+            seriesLocalDataSource.getSeries(offset, PAGE_SIZE)
         }
     }
 

@@ -20,9 +20,9 @@ class ComicsRepository(
         return try {
             val remoteComics = comicsRemoteDataSource.getComics(offset)
             comicsLocalDataSource.insertComics(*remoteComics.toTypedArray())
-            comicsLocalDataSource.getComics()
+            comicsLocalDataSource.getComics(offset, PAGE_SIZE)
         } catch (exception: Exception) {
-            comicsLocalDataSource.getComics()
+            comicsLocalDataSource.getComics(offset, PAGE_SIZE)
         }
     }
 

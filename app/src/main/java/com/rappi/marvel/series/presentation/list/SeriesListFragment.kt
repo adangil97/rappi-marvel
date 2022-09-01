@@ -7,6 +7,7 @@ import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.rappi.marvel.R
 import com.rappi.marvel.databinding.FragmentSeriesListBinding
 import com.rappi.marvel.series.presentation.SeriesEvent
@@ -15,15 +16,22 @@ import com.rappi.marvel.series.presentation.SeriesViewModel
 import com.rappi.marvel.utils.viewBindings
 import dagger.hilt.android.AndroidEntryPoint
 
+
 @AndroidEntryPoint
 class SeriesListFragment : Fragment(R.layout.fragment_series_list) {
+    companion object {
+        private const val ELEMENTS_TO_SCROLL = 10
+    }
+
     private val binding: FragmentSeriesListBinding by viewBindings()
     private val viewModel: SeriesViewModel by viewModels()
     private lateinit var seriesAdapter: SeriesListAdapter
+    private var page = 0
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel.onEvent(SeriesEvent.OnGetSeries())
+        showInitialLoading()
+        viewModel.onEvent(SeriesEvent.OnGetSeries(page))
         viewModel.sideEffect.observe(viewLifecycleOwner) {
             it?.let { seriesState ->
                 takeActionOn(seriesState)
@@ -33,15 +41,38 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list) {
         seriesAdapter = SeriesListAdapter(mutableListOf()) {
             // TODO: redirigir.
         }
-        binding.root.setOnClickListener {
-            Toast.makeText(requireContext(), "test", Toast.LENGTH_SHORT).show()
+        binding.rvSeries.apply {
+            layoutManager = GridLayoutManager(requireContext(), 3)
+            adapter = seriesAdapter
         }
-        binding.apply {
-            rvSeries.apply {
-                layoutManager = GridLayoutManager(requireContext(), 3)
-                adapter = seriesAdapter
+
+        setListeners()
+    }
+
+    private fun setListeners() {
+        binding.rvSeries.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                val layoutManager = recyclerView.layoutManager as GridLayoutManager
+                val totalItemCount = layoutManager.itemCount
+                val lastVisible = layoutManager.findLastVisibleItemPosition()
+                val endHasBeenReached = lastVisible >= totalItemCount - ELEMENTS_TO_SCROLL
+                if (totalItemCount > 0 && endHasBeenReached) {
+                    viewModel.onEvent(SeriesEvent.OnGetSeries(++page))
+                }
             }
-        }
+        })
+    }
+
+    private fun showInitialLoading() {
+        binding.viewShimmer.shimmer.showShimmer(true)
+        binding.viewShimmer.shimmer.isGone = false
+        binding.rvSeries.isGone = true
+    }
+
+    private fun hideInitialLoading() {
+        binding.viewShimmer.shimmer.hideShimmer()
+        binding.viewShimmer.shimmer.isGone = true
+        binding.rvSeries.isGone = false
     }
 
     private fun takeActionOn(seriesState: SeriesState) {
@@ -52,6 +83,8 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list) {
                 Toast.LENGTH_SHORT
             ).show()
             is SeriesState.ShowSeries -> {
+                if (binding.viewShimmer.shimmer.isShimmerVisible)
+                    hideInitialLoading()
                 seriesAdapter.items.addAll(seriesState.series)
                 seriesAdapter.notifyItemRangeInserted(
                     seriesAdapter.items.size,
@@ -62,5 +95,10 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list) {
                 binding.tvEmpty.isGone = false
             }
         }
+    }
+
+    override fun onDestroyView() {
+        viewModel.onEvent(SeriesEvent.OnClearSideEffect)
+        super.onDestroyView()
     }
 }

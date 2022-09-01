@@ -13,10 +13,14 @@ interface ComicsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(vararg series: MarvelEntity)
 
-    @Query("SELECT * FROM MarvelEntity WHERE type = :type")
-    suspend fun getComics(type: MarvelType = MarvelType.COMICS): List<MarvelEntity>
+    @Query("SELECT * FROM MarvelEntity WHERE type = :type ORDER BY time LIMIT :limit OFFSET :offset")
+    suspend fun getComics(
+        offset: Int,
+        limit: Int,
+        type: MarvelType = MarvelType.COMICS
+    ): List<MarvelEntity>
 
-    @Query("SELECT * FROM MarvelEntity WHERE type = :type AND title LIKE '%' || :query || '%'")
+    @Query("SELECT * FROM MarvelEntity WHERE type = :type AND title LIKE '%' || :query || '%' ORDER BY time")
     suspend fun searchComics(
         query: String,
         type: MarvelType = MarvelType.COMICS

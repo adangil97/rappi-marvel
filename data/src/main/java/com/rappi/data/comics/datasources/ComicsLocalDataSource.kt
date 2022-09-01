@@ -7,7 +7,7 @@ import com.rappi.domain.comics.dto.ComicDto
  */
 interface ComicsLocalDataSource {
 
-    suspend fun getComics(): List<ComicDto>
+    suspend fun getComics(offset: Int, limit: Int): List<ComicDto>
 
     suspend fun insertComics(vararg comics: ComicDto)
 

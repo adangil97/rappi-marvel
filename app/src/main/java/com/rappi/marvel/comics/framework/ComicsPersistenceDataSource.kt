@@ -13,8 +13,8 @@ class ComicsPersistenceDataSource(
     private val comicsDao: ComicsDao
 ) : ComicsLocalDataSource {
 
-    override suspend fun getComics(): List<ComicDto> =
-        comicsDao.getComics().map {
+    override suspend fun getComics(offset: Int, limit: Int): List<ComicDto> =
+        comicsDao.getComics(offset, limit).map {
             it.toComicDto()
         }
 

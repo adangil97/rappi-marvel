@@ -14,10 +14,14 @@ interface SeriesDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(vararg series: MarvelEntity)
 
-    @Query("SELECT * FROM MarvelEntity WHERE type = :type")
-    suspend fun getSeries(type: MarvelType = MarvelType.SERIES): List<MarvelEntity>
+    @Query("SELECT * FROM MarvelEntity WHERE type = :type ORDER BY time LIMIT :limit OFFSET :offset")
+    suspend fun getSeries(
+        offset: Int,
+        limit: Int,
+        type: MarvelType = MarvelType.SERIES
+    ): List<MarvelEntity>
 
-    @Query("SELECT * FROM MarvelEntity WHERE type = :type AND title LIKE '%' || :query || '%'")
+    @Query("SELECT * FROM MarvelEntity WHERE type = :type AND title LIKE '%' || :query || '%' ORDER BY time")
     suspend fun searchSeries(
         query: String,
         type: MarvelType = MarvelType.SERIES

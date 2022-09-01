@@ -16,12 +16,13 @@ import javax.inject.Inject
 class ComicsViewModel @Inject constructor(
     private val getComics: GetComics
 ) : ViewModel() {
-    private val mSideEffect = MutableLiveData<ComicsState>()
-    val sideEffect: LiveData<ComicsState> get() = mSideEffect
+    private val mSideEffect = MutableLiveData<ComicsState?>()
+    val sideEffect: LiveData<ComicsState?> get() = mSideEffect
 
     fun onEvent(event: ComicsEvent) {
         when (event) {
             is ComicsEvent.OnGetComics -> onGetComics(event.page)
+            ComicsEvent.OnClearSideEffect -> mSideEffect.value = null
         }
     }
 
@@ -29,10 +30,10 @@ class ComicsViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val comics = getComics(page)
-                if (comics.isNotEmpty())
-                    mSideEffect.value = ComicsState.ShowComics(comics)
-                else
+                if (comics.isEmpty() && page == 0)
                     mSideEffect.value = ComicsState.ShowEmpty
+                else
+                    mSideEffect.value = ComicsState.ShowComics(comics)
             } catch (exception: Exception) {
                 exception.printStackTrace()
                 mSideEffect.value = ComicsState.ShowGenericError(

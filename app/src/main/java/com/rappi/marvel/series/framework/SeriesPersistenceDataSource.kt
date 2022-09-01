@@ -13,8 +13,8 @@ class SeriesPersistenceDataSource(
     private val seriesDao: SeriesDao
 ) : SeriesLocalDataSource {
 
-    override suspend fun getSeries(): List<SerieDto> =
-        seriesDao.getSeries().map {
+    override suspend fun getSeries(offset: Int, limit: Int): List<SerieDto> =
+        seriesDao.getSeries(offset, limit).map {
             it.toSerieDto()
         }
 

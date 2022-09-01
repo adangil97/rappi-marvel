@@ -29,6 +29,10 @@ abstract class ComicsRemoteDataSource(
                     "hash",
                     hash
                 )
+                parameter(
+                    "orderBy",
+                    "modified"
+                )
             }.body()
             response.data.results.map {
                 it.toComicDto()

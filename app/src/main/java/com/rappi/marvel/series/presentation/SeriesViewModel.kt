@@ -16,12 +16,13 @@ import javax.inject.Inject
 class SeriesViewModel @Inject constructor(
     private val getSeries: GetSeries
 ) : ViewModel() {
-    private val mSideEffect = MutableLiveData<SeriesState>()
-    val sideEffect: LiveData<SeriesState> get() = mSideEffect
+    private val mSideEffect = MutableLiveData<SeriesState?>()
+    val sideEffect: LiveData<SeriesState?> get() = mSideEffect
 
     fun onEvent(event: SeriesEvent) {
         when (event) {
             is SeriesEvent.OnGetSeries -> onGetSeries(event.page)
+            SeriesEvent.OnClearSideEffect -> mSideEffect.value = null
         }
     }
 
@@ -29,10 +30,10 @@ class SeriesViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val series = getSeries(page)
-                if (series.isNotEmpty())
-                    mSideEffect.value = SeriesState.ShowSeries(series)
-                else
+                if (series.isEmpty() && page == 0)
                     mSideEffect.value = SeriesState.ShowEmpty
+                else
+                    mSideEffect.value = SeriesState.ShowSeries(series)
             } catch (exception: Exception) {
                 exception.printStackTrace()
                 mSideEffect.value = SeriesState.ShowGenericError(

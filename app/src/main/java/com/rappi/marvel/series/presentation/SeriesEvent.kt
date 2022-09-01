@@ -8,4 +8,6 @@ sealed class SeriesEvent {
     data class OnGetSeries(
         val page: Int = 0
     ) : SeriesEvent()
+
+    object OnClearSideEffect : SeriesEvent()
 }

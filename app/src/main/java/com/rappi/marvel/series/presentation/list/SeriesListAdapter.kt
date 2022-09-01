@@ -37,6 +37,7 @@ class SeriesListAdapter(
                 .load(item.urlImage)
                 .placeholder(ColorDrawable(Color.GRAY))
                 .into(binding.ivMarvelSerie)
+            binding.tvTitle.text = item.title
         }
     }
 
