@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Marvel</string>
+    <string name="menu_title_series">Series</string>
+    <string name="menu_title_comics">Comics</string>
+    <string name="msg_description_iv">Imagen</string>
+
+    <string name="hello_comics_fragment">Hello comics fragment</string>
+    <string name="hello_series_fragment">Hello series fragment</string>
 </resources>
