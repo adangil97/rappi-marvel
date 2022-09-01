@@ -6,7 +6,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.rappi.domain.series.Series
+import com.rappi.domain.series.remote.Series
 import com.rappi.marvel.R
 import com.rappi.marvel.databinding.AdapterSeriesItemBinding
 import com.rappi.marvel.series.presentation.list.SeriesListAdapter.SeriesViewHolder

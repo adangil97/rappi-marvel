@@ -1,6 +1,6 @@
 package com.rappi.marvel.series.presentation
 
-import com.rappi.domain.series.Series
+import com.rappi.domain.series.remote.Series
 
 /**
  * @author Adán Castillo.

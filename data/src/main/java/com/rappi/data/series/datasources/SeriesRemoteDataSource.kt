@@ -1,8 +1,9 @@
 package com.rappi.data.series.datasources
 
 import com.rappi.data.DataConstants
-import com.rappi.domain.series.Series
-import com.rappi.domain.series.SeriesDataWrapper
+import com.rappi.data.utils.toSerieDto
+import com.rappi.domain.series.dto.SerieDto
+import com.rappi.domain.series.remote.SeriesDataWrapper
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
@@ -15,7 +16,7 @@ abstract class SeriesRemoteDataSource(
     private val client: HttpClient
 ) {
 
-    suspend fun getSeries(offset: Int): List<Series> {
+    suspend fun getSeries(offset: Int): List<SerieDto> {
         val response: SeriesDataWrapper = client.get("series") {
             val md = MessageDigest.getInstance("MD5")
             val currentTime = System.currentTimeMillis()
@@ -29,6 +30,8 @@ abstract class SeriesRemoteDataSource(
                 ).toString()
             )
         }.body()
-        return response.data.results
+        return response.data.results.map {
+            it.toSerieDto()
+        }
     }
 }

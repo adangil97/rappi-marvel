@@ -2,7 +2,8 @@ package com.rappi.data.series.repositories
 
 import com.rappi.data.series.datasources.SeriesLocalDataSource
 import com.rappi.data.series.datasources.SeriesRemoteDataSource
-import com.rappi.domain.series.Series
+import com.rappi.domain.series.dto.SerieDto
+import com.rappi.domain.series.remote.Series
 
 /**
  * @author Adán Castillo.
@@ -15,7 +16,7 @@ class SeriesRepository(
         private const val PAGE_SIZE = 20
     }
 
-    suspend fun getSeries(pageNumber: Int): List<Series> {
+    suspend fun getSeries(pageNumber: Int): List<SerieDto> {
         val offset = pageNumber * PAGE_SIZE
         return try {
             val remoteSeries = seriesRemoteDataSource.getSeries(offset)

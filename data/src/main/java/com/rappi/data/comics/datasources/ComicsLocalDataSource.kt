@@ -1,15 +1,15 @@
 package com.rappi.data.comics.datasources
 
-import com.rappi.domain.comics.Comic
+import com.rappi.domain.comics.dto.ComicDto
 
 /**
  * @author Adán Castillo.
  */
 interface ComicsLocalDataSource {
 
-    suspend fun getComics(): List<Comic>
+    suspend fun getComics(): List<ComicDto>
 
-    suspend fun insertComics(vararg comics: Comic)
+    suspend fun insertComics(vararg comics: ComicDto)
 
-    suspend fun searchComics(query: String): List<Comic>
+    suspend fun searchComics(query: String): List<ComicDto>
 }

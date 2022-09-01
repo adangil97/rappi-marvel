@@ -1,8 +1,9 @@
 package com.rappi.data.comics.datasources
 
 import com.rappi.data.DataConstants
-import com.rappi.domain.comics.Comic
-import com.rappi.domain.comics.ComicDataWrapper
+import com.rappi.data.utils.toComicDto
+import com.rappi.domain.comics.dto.ComicDto
+import com.rappi.domain.comics.remote.ComicDataWrapper
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
@@ -15,7 +16,7 @@ abstract class ComicsRemoteDataSource(
     private val client: HttpClient
 ) {
 
-    suspend fun getComics(offset: Int): List<Comic> {
+    suspend fun getComics(offset: Int): List<ComicDto> {
         val response: ComicDataWrapper = client.get("comics") {
             val md = MessageDigest.getInstance("MD5")
             val currentTime = System.currentTimeMillis()
@@ -29,6 +30,8 @@ abstract class ComicsRemoteDataSource(
                 ).toString()
             )
         }.body()
-        return response.data.results
+        return response.data.results.map {
+            it.toComicDto()
+        }
     }
 }
