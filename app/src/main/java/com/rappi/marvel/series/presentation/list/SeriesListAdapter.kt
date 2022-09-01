@@ -6,7 +6,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.rappi.domain.series.remote.Series
+import com.rappi.domain.series.dto.SerieDto
 import com.rappi.marvel.R
 import com.rappi.marvel.databinding.AdapterSeriesItemBinding
 import com.rappi.marvel.series.presentation.list.SeriesListAdapter.SeriesViewHolder
@@ -15,8 +15,8 @@ import com.rappi.marvel.series.presentation.list.SeriesListAdapter.SeriesViewHol
  * @author Adán Castillo.
  */
 class SeriesListAdapter(
-    val items: MutableList<Series>,
-    private val listener: (Series) -> Unit
+    val items: MutableList<SerieDto>,
+    private val listener: (SerieDto) -> Unit
 ) : RecyclerView.Adapter<SeriesViewHolder>() {
 
     inner class SeriesViewHolder(
@@ -32,9 +32,9 @@ class SeriesListAdapter(
             }
         }
 
-        fun bind(item: Series) {
+        fun bind(item: SerieDto) {
             Glide.with(binding.root.context)
-                .load("${item.thumbnail.path}.${item.thumbnail.extension}")
+                .load(item.urlImage)
                 .placeholder(ColorDrawable(Color.GRAY))
                 .into(binding.ivMarvelSerie)
         }

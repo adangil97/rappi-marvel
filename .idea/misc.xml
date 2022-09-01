@@ -5,7 +5,7 @@
       <map>
         <entry key="app/src/main/res/drawable/bnv_tab_item_foreground.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.24791666666666667" />
-        <entry key="app/src/main/res/layout/adapter_series_item.xml" value="0.55" />
+        <entry key="app/src/main/res/layout/adapter_series_item.xml" value="0.4070175438596491" />
         <entry key="app/src/main/res/layout/fragment_comic_list.xml" value="0.1" />
         <entry key="app/src/main/res/layout/fragment_series_list.xml" value="0.23385416666666667" />
         <entry key="app/src/main/res/menu/bottom_navigation_menu.xml" value="0.24791666666666667" />

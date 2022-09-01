@@ -6,5 +6,6 @@ package com.rappi.domain.series.dto
 data class SerieDto(
     val id: Int,
     val title: String,
-    val description: String
+    val description: String,
+    val urlImage: String
 )

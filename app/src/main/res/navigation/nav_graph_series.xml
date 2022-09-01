@@ -1,13 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph_series"
     app:startDestination="@id/seriesListFragment">
 
 
-    <fragment
-        android:id="@+id/seriesListFragment"
-        android:name="com.rappi.marvel.series.presentation.list.SeriesListFragment"
-        tools:layout="@layout/fragment_series_list" />
 </navigation>

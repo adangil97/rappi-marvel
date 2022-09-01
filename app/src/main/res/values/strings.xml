@@ -6,4 +6,5 @@
 
     <string name="hello_comics_fragment">Hello comics fragment</string>
     <string name="hello_series_fragment">Hello series fragment</string>
+    <string name="msg_empty">¡Nada que mostrar!</string>
 </resources>

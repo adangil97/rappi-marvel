@@ -13,7 +13,8 @@ fun MarvelEntity.toSerieDto(): SerieDto =
     SerieDto(
         id = id,
         title = title,
-        description = description
+        description = description,
+        urlImage = urlImage
     )
 
 fun SerieDto.toMarvelEntity(): MarvelEntity =
@@ -21,6 +22,7 @@ fun SerieDto.toMarvelEntity(): MarvelEntity =
         id = id,
         title = title,
         description = description,
+        urlImage = urlImage,
         type = MarvelType.SERIES
     )
 
@@ -28,7 +30,8 @@ fun MarvelEntity.toComicDto(): ComicDto =
     ComicDto(
         id = id,
         title = title,
-        description = description
+        description = description,
+        urlImage = urlImage
     )
 
 fun ComicDto.toMarvelEntity(): MarvelEntity =
@@ -36,5 +39,6 @@ fun ComicDto.toMarvelEntity(): MarvelEntity =
         id = id,
         title = title,
         description = description,
+        urlImage = urlImage,
         type = MarvelType.COMICS
     )

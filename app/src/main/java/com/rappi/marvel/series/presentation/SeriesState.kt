@@ -1,6 +1,6 @@
 package com.rappi.marvel.series.presentation
 
-import com.rappi.domain.series.remote.Series
+import com.rappi.domain.series.dto.SerieDto
 
 /**
  * @author Adán Castillo.
@@ -8,8 +8,10 @@ import com.rappi.domain.series.remote.Series
 sealed class SeriesState {
 
     data class ShowSeries(
-        val series: List<Series>
+        val series: List<SerieDto>
     ) : SeriesState()
+
+    object ShowEmpty : SeriesState()
 
     data class ShowGenericError(
         val errorMessage: String

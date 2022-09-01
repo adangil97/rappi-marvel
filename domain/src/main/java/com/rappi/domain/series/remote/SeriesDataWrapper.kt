@@ -1,5 +1,8 @@
 package com.rappi.domain.series.remote
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class SeriesDataWrapper(
     val attributionHTML: String,
     val attributionText: String,

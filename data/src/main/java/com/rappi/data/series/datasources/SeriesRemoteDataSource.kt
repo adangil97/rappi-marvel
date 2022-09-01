@@ -1,13 +1,13 @@
 package com.rappi.data.series.datasources
 
 import com.rappi.data.DataConstants
+import com.rappi.data.utils.toMD5
 import com.rappi.data.utils.toSerieDto
 import com.rappi.domain.series.dto.SerieDto
 import com.rappi.domain.series.remote.SeriesDataWrapper
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
-import java.security.MessageDigest
 
 /**
  * @author Adán Castillo.
@@ -17,21 +17,25 @@ abstract class SeriesRemoteDataSource(
 ) {
 
     suspend fun getSeries(offset: Int): List<SerieDto> {
-        val response: SeriesDataWrapper = client.get("series") {
-            val md = MessageDigest.getInstance("MD5")
-            val currentTime = System.currentTimeMillis()
-            parameter("offset", offset)
-            parameter("ts", currentTime)
-            parameter("apikey", DataConstants.PUBLIC_KEY)
-            parameter(
-                "hash",
-                md.digest(
-                    "$currentTime${DataConstants.PUBLIC_KEY}${DataConstants.PRIVATE_KEY}".toByteArray()
-                ).toString()
-            )
-        }.body()
-        return response.data.results.map {
-            it.toSerieDto()
+        return try {
+            val response: SeriesDataWrapper = client.get("series") {
+                val currentTime = System.currentTimeMillis()
+                val strHash = "$currentTime${DataConstants.PRIVATE_KEY}${DataConstants.PUBLIC_KEY}"
+                val hash = strHash.toMD5()
+                parameter("offset", offset)
+                parameter("ts", currentTime)
+                parameter("apikey", DataConstants.PUBLIC_KEY)
+                parameter(
+                    "hash",
+                    hash
+                )
+            }.body()
+            return response.data.results.map {
+                it.toSerieDto()
+            }
+        } catch (exception: Exception) {
+            exception.printStackTrace()
+            emptyList()
         }
     }
 }

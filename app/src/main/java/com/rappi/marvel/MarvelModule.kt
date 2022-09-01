@@ -12,6 +12,7 @@ import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
@@ -45,6 +46,17 @@ object MarvelModule {
                 })
             }
             expectSuccess = true
+            HttpResponseValidator {
+                handleResponseExceptionWithRequest { exception, _ ->
+                    val clientException = exception as? ClientRequestException
+                        ?: return@handleResponseExceptionWithRequest
+                    val exceptionResponse = clientException.response
+                    if (exceptionResponse.status != HttpStatusCode.OK) {
+                        val exceptionResponseText = exceptionResponse.bodyAsText()
+                        throw Exception(exceptionResponseText)
+                    }
+                }
+            }
             defaultRequest {
                 host = MarvelConstants.BASE_URL
                 url {

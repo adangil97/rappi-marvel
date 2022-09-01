@@ -5,5 +5,5 @@ package com.rappi.marvel
  */
 object MarvelConstants {
 
-    const val BASE_URL = "gateway.marvel.com:443/v1/public/"
+    const val BASE_URL = "gateway.marvel.com/v1/public/"
 }

@@ -1,9 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph_marvel"
-    app:startDestination="@id/nav_graph_series">
+    app:startDestination="@id/seriesListFragment">
 
-    <include app:graph="@navigation/nav_graph_series" />
-    <include app:graph="@navigation/nav_graph_comics" />
+    <fragment
+        android:id="@+id/seriesListFragment"
+        android:name="com.rappi.marvel.series.presentation.list.SeriesListFragment"
+        tools:layout="@layout/fragment_series_list" />
+
+    <fragment
+        android:id="@+id/comicListFragment"
+        android:name="com.rappi.marvel.comics.presentation.list.ComicListFragment"
+        tools:layout="@layout/fragment_comic_list" />
 </navigation>

@@ -29,7 +29,10 @@ class SeriesViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val series = getSeries(page)
-                mSideEffect.value = SeriesState.ShowSeries(series)
+                if (series.isNotEmpty())
+                    mSideEffect.value = SeriesState.ShowSeries(series)
+                else
+                    mSideEffect.value = SeriesState.ShowEmpty
             } catch (exception: Exception) {
                 exception.printStackTrace()
                 mSideEffect.value = SeriesState.ShowGenericError(
