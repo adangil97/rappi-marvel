@@ -21,6 +21,11 @@ interface SeriesDao {
         type: MarvelType = MarvelType.SERIES
     ): List<MarvelEntity>
 
+    @Query("SELECT * FROM MarvelEntity WHERE type = :type ORDER BY time")
+    suspend fun getAllSeries(
+        type: MarvelType = MarvelType.SERIES
+    ): List<MarvelEntity>
+
     @Query("SELECT * FROM MarvelEntity WHERE type = :type AND title LIKE '%' || :query || '%' ORDER BY time")
     suspend fun searchSeries(
         query: String,

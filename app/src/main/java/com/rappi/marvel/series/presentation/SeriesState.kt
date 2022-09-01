@@ -11,6 +11,10 @@ sealed class SeriesState {
         val series: List<SerieDto>
     ) : SeriesState()
 
+    data class ShowSearchSeries(
+        val series: List<SerieDto>
+    ) : SeriesState()
+
     object ShowEmpty : SeriesState()
 
     data class ShowGenericError(

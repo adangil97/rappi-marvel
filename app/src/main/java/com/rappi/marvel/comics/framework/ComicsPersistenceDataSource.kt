@@ -18,6 +18,11 @@ class ComicsPersistenceDataSource(
             it.toComicDto()
         }
 
+    override suspend fun getAllComics(): List<ComicDto> =
+        comicsDao.getAllComics().map {
+            it.toComicDto()
+        }
+
     override suspend fun insertComics(vararg comics: ComicDto) =
         comicsDao.insert(
             *comics.map {

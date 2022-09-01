@@ -7,11 +7,11 @@ import kotlinx.coroutines.withContext
 /**
  * @author Adán Castillo.
  */
-class SearchSeries(
+class GetAllSeries(
     private val seriesRepository: SeriesRepository
 ) {
 
-    suspend operator fun invoke(query: String) = withContext(Dispatchers.IO) {
-        seriesRepository.searchSeries(query)
+    suspend operator fun invoke() = withContext(Dispatchers.IO) {
+        seriesRepository.getAllSeries()
     }
 }

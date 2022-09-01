@@ -22,6 +22,7 @@ class MarvelActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_marvel)
         val toolbar: Toolbar = findViewById(R.id.toolbar)
+        toolbar.title = ""
         setSupportActionBar(toolbar)
         window?.statusBarColor = ContextCompat.getColor(this, R.color.background)
         val bottomNavigation: BottomNavigationView = findViewById(R.id.bottom_navigation)

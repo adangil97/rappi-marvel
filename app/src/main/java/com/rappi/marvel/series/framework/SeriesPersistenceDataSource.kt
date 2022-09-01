@@ -18,6 +18,11 @@ class SeriesPersistenceDataSource(
             it.toSerieDto()
         }
 
+    override suspend fun getAllSeries(): List<SerieDto> =
+        seriesDao.getAllSeries().map {
+            it.toSerieDto()
+        }
+
     override suspend fun insertSeries(vararg series: SerieDto) =
         seriesDao.insert(
             *series.map {

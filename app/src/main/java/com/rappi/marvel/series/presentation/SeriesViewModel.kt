@@ -4,7 +4,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rappi.usecases.series.GetAllSeries
 import com.rappi.usecases.series.GetSeries
+import com.rappi.usecases.series.SearchSeries
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -14,7 +16,9 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class SeriesViewModel @Inject constructor(
-    private val getSeries: GetSeries
+    private val getSeries: GetSeries,
+    private val searchSeries: SearchSeries,
+    private val getAllSeries: GetAllSeries
 ) : ViewModel() {
     private val mSideEffect = MutableLiveData<SeriesState?>()
     val sideEffect: LiveData<SeriesState?> get() = mSideEffect
@@ -23,6 +27,33 @@ class SeriesViewModel @Inject constructor(
         when (event) {
             is SeriesEvent.OnGetSeries -> onGetSeries(event.page)
             SeriesEvent.OnClearSideEffect -> mSideEffect.value = null
+            is SeriesEvent.OnSearchSeries -> {
+                if (event.query.isNotEmpty()) {
+                    onSearchSeries(event.query)
+                } else {
+                    onGetAllSeries()
+                }
+            }
+        }
+    }
+
+    private fun onGetAllSeries() {
+        viewModelScope.launch {
+            val series = getAllSeries()
+            if (series.isNotEmpty())
+                mSideEffect.value = SeriesState.ShowSearchSeries(series)
+            else
+                mSideEffect.value = SeriesState.ShowEmpty
+        }
+    }
+
+    private fun onSearchSeries(query: String) {
+        viewModelScope.launch {
+            val series = searchSeries(query)
+            if (series.isNotEmpty())
+                mSideEffect.value = SeriesState.ShowSearchSeries(series)
+            else
+                mSideEffect.value = SeriesState.ShowEmpty
         }
     }
 

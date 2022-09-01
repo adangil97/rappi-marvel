@@ -11,6 +11,10 @@ sealed class ComicsState {
         val comics: List<ComicDto>
     ) : ComicsState()
 
+    data class ShowSearchComics(
+        val comics: List<ComicDto>
+    ) : ComicsState()
+
     object ShowEmpty : ComicsState()
 
     data class ShowGenericError(

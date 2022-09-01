@@ -9,6 +9,8 @@ interface SeriesLocalDataSource {
 
     suspend fun getSeries(offset: Int, limit: Int): List<SerieDto>
 
+    suspend fun getAllSeries(): List<SerieDto>
+
     suspend fun insertSeries(vararg series: SerieDto)
 
     suspend fun searchSeries(query: String): List<SerieDto>

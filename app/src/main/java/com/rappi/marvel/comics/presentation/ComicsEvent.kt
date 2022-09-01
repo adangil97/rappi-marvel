@@ -9,5 +9,9 @@ sealed class ComicsEvent {
         val page: Int = 0
     ) : ComicsEvent()
 
+    data class OnSearchComics(
+        val query: String
+    ) : ComicsEvent()
+
     object OnClearSideEffect : ComicsEvent()
 }

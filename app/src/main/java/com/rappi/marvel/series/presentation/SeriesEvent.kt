@@ -9,5 +9,9 @@ sealed class SeriesEvent {
         val page: Int = 0
     ) : SeriesEvent()
 
+    data class OnSearchSeries(
+        val query: String
+    ) : SeriesEvent()
+
     object OnClearSideEffect : SeriesEvent()
 }

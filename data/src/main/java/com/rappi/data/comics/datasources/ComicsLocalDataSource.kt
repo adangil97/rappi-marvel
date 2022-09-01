@@ -9,6 +9,8 @@ interface ComicsLocalDataSource {
 
     suspend fun getComics(offset: Int, limit: Int): List<ComicDto>
 
+    suspend fun getAllComics(): List<ComicDto>
+
     suspend fun insertComics(vararg comics: ComicDto)
 
     suspend fun searchComics(query: String): List<ComicDto>
