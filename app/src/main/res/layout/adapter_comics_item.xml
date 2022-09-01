@@ -14,7 +14,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
-            android:id="@+id/iv_marvel_serie"
+            android:id="@+id/iv_marvel_comic"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:contentDescription="@string/msg_description_iv"

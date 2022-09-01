@@ -11,13 +11,13 @@ import androidx.room.Query
 @Dao
 interface ComicsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(series: MarvelEntity)
+    suspend fun insert(vararg series: MarvelEntity)
 
     @Query("SELECT * FROM MarvelEntity WHERE type = :type")
-    suspend fun getSeries(type: MarvelType = MarvelType.COMICS): List<MarvelEntity>
+    suspend fun getComics(type: MarvelType = MarvelType.COMICS): List<MarvelEntity>
 
     @Query("SELECT * FROM MarvelEntity WHERE type = :type AND title LIKE '%' || :query || '%'")
-    suspend fun searchSeries(
+    suspend fun searchComics(
         query: String,
         type: MarvelType = MarvelType.COMICS
     ): List<MarvelEntity>
