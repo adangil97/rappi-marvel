@@ -43,6 +43,10 @@ abstract class ComicsRemoteDataSource(
                     "orderBy",
                     "-modified"
                 )
+                parameter(
+                    "limit",
+                    DataConstants.PAGE_SIZE
+                )
             }.body()
             response.data.results.map {
                 // Convierte los comics obtenidas del servicio a un listado de comics transferible a capas superiores.

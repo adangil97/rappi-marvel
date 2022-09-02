@@ -44,6 +44,10 @@ abstract class SeriesRemoteDataSource(
                     "orderBy",
                     "-modified"
                 )
+                parameter(
+                    "limit",
+                    DataConstants.PAGE_SIZE
+                )
             }.body()
             return response.data.results.map {
                 // Convierte las series obtenidas del servicio a un listado de series transferible a capas superiores.
