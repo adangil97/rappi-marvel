@@ -1,4 +1,4 @@
-package com.rappi.marvel.comics.presentation
+package com.rappi.marvel.comics.presentation.list
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -15,19 +15,19 @@ import javax.inject.Inject
  * @author Adán Castillo.
  */
 @HiltViewModel
-class ComicsViewModel @Inject constructor(
+class ComicsListViewModel @Inject constructor(
     private val getComics: GetComics,
     private val searchComics: SearchComics,
     private val getAllComics: GetAllComics
 ) : ViewModel() {
-    private val mSideEffect = MutableLiveData<ComicsState?>()
-    val sideEffect: LiveData<ComicsState?> get() = mSideEffect
+    private val mSideEffect = MutableLiveData<ComicsListState?>()
+    val sideEffect: LiveData<ComicsListState?> get() = mSideEffect
 
-    fun onEvent(event: ComicsEvent) {
+    fun onEvent(event: ComicsListEvent) {
         when (event) {
-            is ComicsEvent.OnGetComics -> onGetComics(event.page)
-            ComicsEvent.OnClearSideEffect -> mSideEffect.value = null
-            is ComicsEvent.OnSearchComics -> {
+            is ComicsListEvent.OnGetComics -> onGetComics(event.page)
+            ComicsListEvent.OnClearSideEffect -> mSideEffect.value = null
+            is ComicsListEvent.OnSearchComics -> {
                 if (event.query.isNotEmpty()) {
                     onSearchComics(event.query)
                 } else {
@@ -41,9 +41,9 @@ class ComicsViewModel @Inject constructor(
         viewModelScope.launch {
             val comics = getAllComics()
             if (comics.isNotEmpty())
-                mSideEffect.value = ComicsState.ShowSearchComics(comics)
+                mSideEffect.value = ComicsListState.ShowSearchComics(comics)
             else
-                mSideEffect.value = ComicsState.ShowEmpty
+                mSideEffect.value = ComicsListState.ShowEmpty
         }
     }
 
@@ -51,9 +51,9 @@ class ComicsViewModel @Inject constructor(
         viewModelScope.launch {
             val comics = searchComics(query)
             if (comics.isNotEmpty())
-                mSideEffect.value = ComicsState.ShowSearchComics(comics)
+                mSideEffect.value = ComicsListState.ShowSearchComics(comics)
             else
-                mSideEffect.value = ComicsState.ShowEmpty
+                mSideEffect.value = ComicsListState.ShowEmpty
         }
     }
 
@@ -62,12 +62,12 @@ class ComicsViewModel @Inject constructor(
             try {
                 val comics = getComics(page)
                 if (comics.isEmpty() && page == 0)
-                    mSideEffect.value = ComicsState.ShowEmpty
+                    mSideEffect.value = ComicsListState.ShowEmpty
                 else
-                    mSideEffect.value = ComicsState.ShowComics(comics)
+                    mSideEffect.value = ComicsListState.ShowComics(comics)
             } catch (exception: Exception) {
                 exception.printStackTrace()
-                mSideEffect.value = ComicsState.ShowGenericError(
+                mSideEffect.value = ComicsListState.ShowGenericError(
                     exception.localizedMessage ?: exception.message ?: "Unknown Error"
                 )
             }

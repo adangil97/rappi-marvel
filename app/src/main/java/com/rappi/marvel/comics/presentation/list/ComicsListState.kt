@@ -1,23 +1,23 @@
-package com.rappi.marvel.comics.presentation
+package com.rappi.marvel.comics.presentation.list
 
 import com.rappi.domain.comics.dto.ComicDto
 
 /**
  * @author Adán Castillo.
  */
-sealed class ComicsState {
+sealed class ComicsListState {
 
     data class ShowComics(
         val comics: List<ComicDto>
-    ) : ComicsState()
+    ) : ComicsListState()
 
     data class ShowSearchComics(
         val comics: List<ComicDto>
-    ) : ComicsState()
+    ) : ComicsListState()
 
-    object ShowEmpty : ComicsState()
+    object ShowEmpty : ComicsListState()
 
     data class ShowGenericError(
         val errorMessage: String
-    ) : ComicsState()
+    ) : ComicsListState()
 }

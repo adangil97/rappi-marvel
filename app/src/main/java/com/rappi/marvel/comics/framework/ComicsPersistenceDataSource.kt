@@ -34,4 +34,7 @@ class ComicsPersistenceDataSource(
         comicsDao.searchComics(query).map {
             it.toComicDto()
         }
+
+    override suspend fun getComicById(id: Int): ComicDto =
+        comicsDao.getComicById(id).toComicDto()
 }

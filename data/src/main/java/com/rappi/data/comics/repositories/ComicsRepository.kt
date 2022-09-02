@@ -29,4 +29,6 @@ class ComicsRepository(
     suspend fun getAllComics() = comicsLocalDataSource.getAllComics()
 
     suspend fun searchComics(query: String) = comicsLocalDataSource.searchComics(query)
+
+    suspend fun getComicById(id: Int) = comicsLocalDataSource.getComicById(id)
 }

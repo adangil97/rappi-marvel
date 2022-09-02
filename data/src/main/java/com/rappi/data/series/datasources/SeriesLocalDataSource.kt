@@ -14,4 +14,6 @@ interface SeriesLocalDataSource {
     suspend fun insertSeries(vararg series: SerieDto)
 
     suspend fun searchSeries(query: String): List<SerieDto>
+
+    suspend fun getSerieById(id: Int): SerieDto
 }

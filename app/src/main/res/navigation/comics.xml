@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/comics"
+    app:startDestination="@id/comicListFragment">
+
+    <fragment
+        android:id="@+id/comicListFragment"
+        android:name="com.rappi.marvel.comics.presentation.list.ComicListFragment"
+        tools:layout="@layout/fragment_comic_list">
+        <action
+            android:id="@+id/action_comicListFragment_to_comicsDetailFragment"
+            app:destination="@id/comicsDetailFragment"
+            app:enterAnim="@anim/nav_default_pop_enter_anim"
+            app:exitAnim="@anim/nav_default_pop_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+    </fragment>
+    <fragment
+        android:id="@+id/comicsDetailFragment"
+        android:name="com.rappi.marvel.comics.presentation.detail.ComicsDetailFragment"
+        tools:layout="@layout/fragment_comics_detail">
+        <argument
+            android:name="id"
+            app:argType="integer" />
+    </fragment>
+</navigation>

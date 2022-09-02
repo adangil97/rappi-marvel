@@ -34,4 +34,7 @@ class SeriesPersistenceDataSource(
         seriesDao.searchSeries(query).map {
             it.toSerieDto()
         }
+
+    override suspend fun getSerieById(id: Int): SerieDto =
+        seriesDao.getSerieById(id).toSerieDto()
 }

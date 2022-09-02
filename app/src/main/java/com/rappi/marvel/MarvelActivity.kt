@@ -3,7 +3,7 @@ package com.rappi.marvel
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.appcompat.widget.Toolbar
-import androidx.core.content.ContextCompat
+import androidx.core.view.isGone
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
@@ -24,11 +24,10 @@ class MarvelActivity : AppCompatActivity() {
         val toolbar: Toolbar = findViewById(R.id.toolbar)
         toolbar.title = ""
         setSupportActionBar(toolbar)
-        window?.statusBarColor = ContextCompat.getColor(this, R.color.background)
         val bottomNavigation: BottomNavigationView = findViewById(R.id.bottom_navigation)
 
         bottomNavigation.itemIconTintList = null
-        bottomNavigation.selectedItemId = R.id.seriesListFragment
+        bottomNavigation.selectedItemId = R.id.series
 
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
@@ -36,11 +35,20 @@ class MarvelActivity : AppCompatActivity() {
 
         bottomNavigation.setupWithNavController(navController)
 
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            when (destination.id) {
+                R.id.comicsDetailFragment, R.id.seriesDetailFragment -> {
+                    bottomNavigation.isGone = true
+                }
+                else -> bottomNavigation.isGone = false
+            }
+        }
+
         // Setup the ActionBar with navController and 3 top level destinations
         appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.seriesListFragment,
-                R.id.comicListFragment
+                R.id.series,
+                R.id.comics
             )
         )
         setupActionBarWithNavController(navController, appBarConfiguration)

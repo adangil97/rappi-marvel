@@ -14,4 +14,6 @@ interface ComicsLocalDataSource {
     suspend fun insertComics(vararg comics: ComicDto)
 
     suspend fun searchComics(query: String): List<ComicDto>
+
+    suspend fun getComicById(id: Int): ComicDto
 }

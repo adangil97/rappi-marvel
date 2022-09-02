@@ -29,4 +29,6 @@ class SeriesRepository(
     suspend fun getAllSeries() = seriesLocalDataSource.getAllSeries()
 
     suspend fun searchSeries(query: String) = seriesLocalDataSource.searchSeries(query)
+
+    suspend fun getSerieById(id: Int) = seriesLocalDataSource.getSerieById(id)
 }

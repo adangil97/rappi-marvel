@@ -1,4 +1,4 @@
-package com.rappi.marvel.series.presentation
+package com.rappi.marvel.series.presentation.list
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -15,19 +15,19 @@ import javax.inject.Inject
  * @author Adán Castillo.
  */
 @HiltViewModel
-class SeriesViewModel @Inject constructor(
+class SeriesListViewModel @Inject constructor(
     private val getSeries: GetSeries,
     private val searchSeries: SearchSeries,
     private val getAllSeries: GetAllSeries
 ) : ViewModel() {
-    private val mSideEffect = MutableLiveData<SeriesState?>()
-    val sideEffect: LiveData<SeriesState?> get() = mSideEffect
+    private val mSideEffect = MutableLiveData<SeriesListState?>()
+    val sideEffect: LiveData<SeriesListState?> get() = mSideEffect
 
-    fun onEvent(event: SeriesEvent) {
+    fun onEvent(event: SeriesListEvent) {
         when (event) {
-            is SeriesEvent.OnGetSeries -> onGetSeries(event.page)
-            SeriesEvent.OnClearSideEffect -> mSideEffect.value = null
-            is SeriesEvent.OnSearchSeries -> {
+            is SeriesListEvent.OnGetSeries -> onGetSeries(event.page)
+            SeriesListEvent.OnClearSideEffect -> mSideEffect.value = null
+            is SeriesListEvent.OnSearchSeries -> {
                 if (event.query.isNotEmpty()) {
                     onSearchSeries(event.query)
                 } else {
@@ -41,9 +41,9 @@ class SeriesViewModel @Inject constructor(
         viewModelScope.launch {
             val series = getAllSeries()
             if (series.isNotEmpty())
-                mSideEffect.value = SeriesState.ShowSearchSeries(series)
+                mSideEffect.value = SeriesListState.ShowSearchSeries(series)
             else
-                mSideEffect.value = SeriesState.ShowEmpty
+                mSideEffect.value = SeriesListState.ShowEmpty
         }
     }
 
@@ -51,9 +51,9 @@ class SeriesViewModel @Inject constructor(
         viewModelScope.launch {
             val series = searchSeries(query)
             if (series.isNotEmpty())
-                mSideEffect.value = SeriesState.ShowSearchSeries(series)
+                mSideEffect.value = SeriesListState.ShowSearchSeries(series)
             else
-                mSideEffect.value = SeriesState.ShowEmpty
+                mSideEffect.value = SeriesListState.ShowEmpty
         }
     }
 
@@ -62,12 +62,12 @@ class SeriesViewModel @Inject constructor(
             try {
                 val series = getSeries(page)
                 if (series.isEmpty() && page == 0)
-                    mSideEffect.value = SeriesState.ShowEmpty
+                    mSideEffect.value = SeriesListState.ShowEmpty
                 else
-                    mSideEffect.value = SeriesState.ShowSeries(series)
+                    mSideEffect.value = SeriesListState.ShowSeries(series)
             } catch (exception: Exception) {
                 exception.printStackTrace()
-                mSideEffect.value = SeriesState.ShowGenericError(
+                mSideEffect.value = SeriesListState.ShowGenericError(
                     exception.localizedMessage ?: exception.message ?: "Unknown Error"
                 )
             }

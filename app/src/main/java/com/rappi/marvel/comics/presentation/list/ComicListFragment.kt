@@ -7,20 +7,20 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
+import androidx.core.content.ContextCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.rappi.marvel.R
-import com.rappi.marvel.comics.presentation.ComicsEvent
-import com.rappi.marvel.comics.presentation.ComicsState
-import com.rappi.marvel.comics.presentation.ComicsViewModel
 import com.rappi.marvel.databinding.FragmentComicListBinding
 import com.rappi.marvel.utils.viewBindings
 import dagger.hilt.android.AndroidEntryPoint
@@ -32,16 +32,18 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
     }
 
     private val binding: FragmentComicListBinding by viewBindings()
-    private val viewModel: ComicsViewModel by viewModels()
+    private val viewModel: ComicsListViewModel by viewModels()
     private lateinit var comicAdapter: ComicListAdapter
     private var page = 0
     private var isSearching = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        requireActivity().window?.statusBarColor = ContextCompat.getColor(requireContext(), R.color.background)
+        (requireActivity() as AppCompatActivity).supportActionBar?.show()
         showMenu()
         showInitialLoading()
-        viewModel.onEvent(ComicsEvent.OnGetComics(page))
+        viewModel.onEvent(ComicsListEvent.OnGetComics(page))
         viewModel.sideEffect.observe(viewLifecycleOwner) {
             it?.let { comicState ->
                 takeActionOn(comicState)
@@ -49,7 +51,10 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
         }
 
         comicAdapter = ComicListAdapter(mutableListOf()) {
-            // TODO: redirigir.
+            val action = ComicListFragmentDirections.actionComicListFragmentToComicsDetailFragment(
+                it.id
+            )
+            findNavController().navigate(action)
         }
         binding.rvComics.apply {
             layoutManager = GridLayoutManager(requireContext(), 3)
@@ -66,7 +71,7 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
                 val lastVisible = layoutManager.findLastVisibleItemPosition()
                 val endHasBeenReached = lastVisible >= totalItemCount - ELEMENTS_TO_SCROLL
                 if (totalItemCount > 0 && endHasBeenReached && !isSearching) {
-                    viewModel.onEvent(ComicsEvent.OnGetComics(++page))
+                    viewModel.onEvent(ComicsListEvent.OnGetComics(++page))
                 }
             }
         })
@@ -84,14 +89,14 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
         binding.rvComics.isGone = false
     }
 
-    private fun takeActionOn(comicState: ComicsState) {
+    private fun takeActionOn(comicState: ComicsListState) {
         when (comicState) {
-            is ComicsState.ShowGenericError -> Toast.makeText(
+            is ComicsListState.ShowGenericError -> Toast.makeText(
                 requireContext(),
                 comicState.errorMessage,
                 Toast.LENGTH_SHORT
             ).show()
-            is ComicsState.ShowComics -> {
+            is ComicsListState.ShowComics -> {
                 binding.rvComics.isGone = false
                 if (binding.viewShimmer.shimmer.isShimmerVisible)
                     hideInitialLoading()
@@ -101,12 +106,14 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
                     comicState.comics.size
                 )
             }
-            ComicsState.ShowEmpty -> {
+            ComicsListState.ShowEmpty -> {
+                hideInitialLoading()
                 binding.rvComics.isGone = true
                 binding.tvEmpty.isGone = false
             }
-            is ComicsState.ShowSearchComics -> {
+            is ComicsListState.ShowSearchComics -> {
                 binding.rvComics.isGone = false
+                binding.tvEmpty.isGone = true
                 comicAdapter.items.clear()
                 comicAdapter.notifyItemRangeRemoved(0, comicAdapter.items.size)
                 comicAdapter.items.addAll(comicState.comics)
@@ -154,7 +161,7 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
     }
 
     override fun onDestroyView() {
-        viewModel.onEvent(ComicsEvent.OnClearSideEffect)
+        viewModel.onEvent(ComicsListEvent.OnClearSideEffect)
         super.onDestroyView()
     }
 
@@ -170,7 +177,7 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
 
     private fun search(query: String) {
         viewModel.onEvent(
-            ComicsEvent.OnSearchComics(query)
+            ComicsListEvent.OnSearchComics(query)
         )
     }
 }

@@ -23,9 +23,10 @@
             android:id="@+id/iv_logo_marvel"
             android:layout_width="200dp"
             android:layout_height="match_parent"
-            android:layout_margin="4dp"
             android:layout_gravity="center_vertical"
             android:layout_marginStart="12dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
             android:contentDescription="@string/msg_description_iv"
             android:src="@drawable/ic_marvel" />
     </androidx.appcompat.widget.Toolbar>
@@ -35,9 +36,6 @@
         android:name="androidx.navigation.fragment.NavHostFragment"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="12dp"
-        android:layout_marginEnd="4dp"
         app:defaultNavHost="true"
         app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
         app:layout_constraintEnd_toEndOf="parent"

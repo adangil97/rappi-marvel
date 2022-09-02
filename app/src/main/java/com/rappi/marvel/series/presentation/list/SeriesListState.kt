@@ -1,23 +1,23 @@
-package com.rappi.marvel.series.presentation
+package com.rappi.marvel.series.presentation.list
 
 import com.rappi.domain.series.dto.SerieDto
 
 /**
  * @author Adán Castillo.
  */
-sealed class SeriesState {
+sealed class SeriesListState {
 
     data class ShowSeries(
         val series: List<SerieDto>
-    ) : SeriesState()
+    ) : SeriesListState()
 
     data class ShowSearchSeries(
         val series: List<SerieDto>
-    ) : SeriesState()
+    ) : SeriesListState()
 
-    object ShowEmpty : SeriesState()
+    object ShowEmpty : SeriesListState()
 
     data class ShowGenericError(
         val errorMessage: String
-    ) : SeriesState()
+    ) : SeriesListState()
 }

@@ -7,21 +7,21 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
+import androidx.core.content.ContextCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.rappi.marvel.R
 import com.rappi.marvel.databinding.FragmentSeriesListBinding
-import com.rappi.marvel.series.presentation.SeriesEvent
-import com.rappi.marvel.series.presentation.SeriesState
-import com.rappi.marvel.series.presentation.SeriesViewModel
 import com.rappi.marvel.utils.viewBindings
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -33,16 +33,18 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
     }
 
     private val binding: FragmentSeriesListBinding by viewBindings()
-    private val viewModel: SeriesViewModel by viewModels()
+    private val viewModel: SeriesListViewModel by viewModels()
     private lateinit var seriesAdapter: SeriesListAdapter
     private var page = 0
     private var isSearching = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        requireActivity().window?.statusBarColor = ContextCompat.getColor(requireContext(), R.color.background)
+        (requireActivity() as AppCompatActivity).supportActionBar?.show()
         showMenu()
         showInitialLoading()
-        viewModel.onEvent(SeriesEvent.OnGetSeries(page))
+        viewModel.onEvent(SeriesListEvent.OnGetSeries(page))
         viewModel.sideEffect.observe(viewLifecycleOwner) {
             it?.let { seriesState ->
                 takeActionOn(seriesState)
@@ -50,7 +52,11 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
         }
 
         seriesAdapter = SeriesListAdapter(mutableListOf()) {
-            // TODO: redirigir.
+            val action =
+                SeriesListFragmentDirections.actionSeriesListFragmentToSeriesDetailFragment(
+                    it.id
+                )
+            findNavController().navigate(action)
         }
         binding.rvSeries.apply {
             layoutManager = GridLayoutManager(requireContext(), 3)
@@ -68,7 +74,7 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
                 val lastVisible = layoutManager.findLastVisibleItemPosition()
                 val endHasBeenReached = lastVisible >= totalItemCount - ELEMENTS_TO_SCROLL
                 if (totalItemCount > 0 && endHasBeenReached && !isSearching) {
-                    viewModel.onEvent(SeriesEvent.OnGetSeries(++page))
+                    viewModel.onEvent(SeriesListEvent.OnGetSeries(++page))
                 }
             }
         })
@@ -86,14 +92,14 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
         binding.rvSeries.isGone = false
     }
 
-    private fun takeActionOn(seriesState: SeriesState) {
+    private fun takeActionOn(seriesState: SeriesListState) {
         when (seriesState) {
-            is SeriesState.ShowGenericError -> Toast.makeText(
+            is SeriesListState.ShowGenericError -> Toast.makeText(
                 requireContext(),
                 seriesState.errorMessage,
                 Toast.LENGTH_SHORT
             ).show()
-            is SeriesState.ShowSeries -> {
+            is SeriesListState.ShowSeries -> {
                 binding.rvSeries.isGone = false
                 if (binding.viewShimmer.shimmer.isShimmerVisible)
                     hideInitialLoading()
@@ -103,12 +109,14 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
                     seriesState.series.size
                 )
             }
-            SeriesState.ShowEmpty -> {
+            SeriesListState.ShowEmpty -> {
+                hideInitialLoading()
                 binding.rvSeries.isGone = true
                 binding.tvEmpty.isGone = false
             }
-            is SeriesState.ShowSearchSeries -> {
+            is SeriesListState.ShowSearchSeries -> {
                 binding.rvSeries.isGone = false
+                binding.tvEmpty.isGone = true
                 val size = seriesAdapter.items.size
                 seriesAdapter.items.clear()
                 seriesAdapter.notifyItemRangeRemoved(0, size)
@@ -157,7 +165,7 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
     }
 
     override fun onDestroyView() {
-        viewModel.onEvent(SeriesEvent.OnClearSideEffect)
+        viewModel.onEvent(SeriesListEvent.OnClearSideEffect)
         super.onDestroyView()
     }
 
@@ -173,7 +181,7 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
 
     private fun search(query: String) {
         viewModel.onEvent(
-            SeriesEvent.OnSearchSeries(query)
+            SeriesListEvent.OnSearchSeries(query)
         )
     }
 }

@@ -44,3 +44,6 @@ fun ComicDto.toMarvelEntity(): MarvelEntity =
         type = MarvelType.COMICS,
         time = System.currentTimeMillis()
     )
+
+fun Int.toHexColor(): String =
+    String.format("%06X", 0xFFFFFF and this)

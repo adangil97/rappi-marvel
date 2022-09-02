@@ -32,5 +32,5 @@ interface ComicsDao {
     ): List<MarvelEntity>
 
     @Query("SELECT * FROM MarvelEntity WHERE id = :id")
-    suspend fun getComicsById(id: Int): MarvelEntity
+    suspend fun getComicById(id: Int): MarvelEntity
 }

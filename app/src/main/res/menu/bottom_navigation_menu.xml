@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/seriesListFragment"
+        android:id="@+id/series"
         android:enabled="true"
         android:icon="@drawable/icon_series"
         android:title="@string/menu_title_series"/>
     <item
-        android:id="@+id/comicListFragment"
+        android:id="@+id/comics"
         android:enabled="true"
         android:icon="@drawable/icon_comics"
         android:title="@string/menu_title_comics"/>
