@@ -3,6 +3,8 @@ package com.rappi.marvel.database
 import androidx.room.TypeConverter
 
 /**
+ * Permite convertir enums a strings y viceversa.
+ *
  * @author Adán Castillo.
  */
 class MarvelTypeConverter {

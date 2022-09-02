@@ -4,6 +4,8 @@ import android.app.Application
 import dagger.hilt.android.HiltAndroidApp
 
 /**
+ * Aplicación marvel.
+ *
  * @author Adán Castillo.
  */
 @HiltAndroidApp

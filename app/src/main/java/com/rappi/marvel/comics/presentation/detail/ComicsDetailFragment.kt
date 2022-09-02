@@ -25,6 +25,9 @@ import com.rappi.marvel.utils.toHexColor
 import com.rappi.marvel.utils.viewBindings
 import dagger.hilt.android.AndroidEntryPoint
 
+/**
+ * Contiene la vista del detalle del comic marvel seleccionado.
+ */
 @AndroidEntryPoint
 class ComicsDetailFragment : Fragment(R.layout.fragment_comics_detail) {
     private val binding: FragmentComicsDetailBinding by viewBindings()

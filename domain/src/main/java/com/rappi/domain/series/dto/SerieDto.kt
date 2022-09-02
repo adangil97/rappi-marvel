@@ -1,6 +1,8 @@
 package com.rappi.domain.series.dto
 
 /**
+ * Es el modelo de series marvel a transferir a las capas superiores.
+ *
  * @author Adán Castillo.
  */
 data class SerieDto(

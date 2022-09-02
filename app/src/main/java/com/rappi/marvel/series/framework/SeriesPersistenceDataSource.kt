@@ -7,6 +7,10 @@ import com.rappi.marvel.utils.toMarvelEntity
 import com.rappi.marvel.utils.toSerieDto
 
 /**
+ * Es la implementación del contrato de Series locales.
+ *
+ * @param seriesDao [SeriesDao] contiene accesos a la tabla de series de marvel.
+ *
  * @author Adán Castillo.
  */
 class SeriesPersistenceDataSource(

@@ -13,30 +13,50 @@ import dagger.hilt.android.scopes.ViewModelScoped
 import io.ktor.client.*
 
 /**
+ * Proporciona los modulos necesarios para el framework de comics marvel.
+ *
  * @author Adán Castillo.
  */
 @Module
 @InstallIn(ViewModelComponent::class)
 object ComicsFrameworkModule {
 
+    /**
+     * Proporciona una instancia del acceso a la tabla de comics.
+     *
+     * @param marvelDatabase [MarvelDatabase] es la base de datos de marvel.
+     */
     @Provides
     @ViewModelScoped
     fun providesComicsDao(marvelDatabase: MarvelDatabase): ComicsDao =
         marvelDatabase.comicsDao()
 
+    /**
+     * Proporciona una instancia de la implmentación del flujo de datos remotos.
+     *
+     * @param client [HttpClient] cliente necesario para hacer las llamadas a api de marvel.
+     */
     @Provides
     @ViewModelScoped
     fun providesComicsRemoteDataSource(client: HttpClient): ComicsRemoteDataSource =
         ComicsApiDataSource(client)
 
+    /**
+     * Proporciona una instancia de la implementación del flujo de datos locales.
+     *
+     * @param comicsDao [ComicsDao] contiene acceso a la tabla de comics marvel.
+     */
     @Provides
     @ViewModelScoped
     fun providesComicsLocalDataSource(comicsDao: ComicsDao): ComicsLocalDataSource =
         ComicsPersistenceDataSource(comicsDao)
 
+    /**
+     * Proporciona una instancia del repositorio de llamadas a flujos de comics marvel.
+     */
     @Provides
     @ViewModelScoped
-    fun provides(
+    fun providesComicsRepository(
         comicsRemoteDataSource: ComicsRemoteDataSource,
         comicsLocalDataSource: ComicsLocalDataSource
     ): ComicsRepository =

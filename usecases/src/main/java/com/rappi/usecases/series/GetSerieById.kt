@@ -5,6 +5,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
+ * Obtiene una serie por id.
+ *
  * @author Adán Castillo.
  */
 class GetSerieById(

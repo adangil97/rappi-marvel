@@ -5,6 +5,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
+ * Obtiene todos los comics que hay almacenados en local.
+ *
  * @author Adán Castillo.
  */
 class GetAllComics(

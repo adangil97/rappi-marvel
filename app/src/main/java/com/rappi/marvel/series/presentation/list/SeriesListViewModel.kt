@@ -12,6 +12,8 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
+ * Realiza la comunicación con los casos de uso, también informa a UI sobre acciones, estados y efectos.
+ *
  * @author Adán Castillo.
  */
 @HiltViewModel

@@ -6,6 +6,8 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 
 /**
+ * Contiene las llamadas a las tablas de la base de datos para entidades de tipo serie.
+ *
  * @author Adán Castillo.
  */
 @Dao

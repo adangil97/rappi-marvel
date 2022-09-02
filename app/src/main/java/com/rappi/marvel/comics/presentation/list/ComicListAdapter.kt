@@ -12,6 +12,11 @@ import com.rappi.marvel.comics.presentation.list.ComicListAdapter.ComicsViewHold
 import com.rappi.marvel.databinding.AdapterComicsItemBinding
 
 /**
+ * Contiene la vista de item comic de marvel.
+ *
+ * @param items [MutableList] es el listado de comics marvel.
+ * @param listener [Unit] permite informar sobre que elemento se dio click.
+ *
  * @author Adán Castillo.
  */
 class ComicListAdapter(

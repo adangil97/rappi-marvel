@@ -25,7 +25,9 @@ import com.rappi.marvel.utils.toHexColor
 import com.rappi.marvel.utils.viewBindings
 import dagger.hilt.android.AndroidEntryPoint
 
-
+/**
+ * Contiene la vista del detalle de la serie marvel seleccionada.
+ */
 @AndroidEntryPoint
 class SeriesDetailFragment : Fragment(R.layout.fragment_series_detail) {
     private val binding: FragmentSeriesDetailBinding by viewBindings()

@@ -13,6 +13,9 @@ import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
 
+/**
+ * Es la pantalla principal que contiene la navegación a las pantallas disponibles.
+ */
 @AndroidEntryPoint
 class MarvelActivity : AppCompatActivity() {
     private lateinit var navController: NavController

@@ -8,6 +8,8 @@ import java.math.BigInteger
 import java.security.MessageDigest
 
 /**
+ * Contiene funciones de conversión de modelos.
+ *
  * @author Adán Castillo.
  */
 

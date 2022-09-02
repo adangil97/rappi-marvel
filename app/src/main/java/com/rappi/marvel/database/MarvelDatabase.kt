@@ -5,6 +5,8 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
 /**
+ * Base de datos de la aplicación.
+ *
  * @author Adán Castillo.
  */
 @Database(

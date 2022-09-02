@@ -3,6 +3,8 @@ package com.rappi.marvel.series.presentation.list
 import com.rappi.domain.series.dto.SerieDto
 
 /**
+ * Definición de contrato de los diferentes efectos que podemos mostrar en UI de listado de series marvel.
+ *
  * @author Adán Castillo.
  */
 sealed class SeriesListState {

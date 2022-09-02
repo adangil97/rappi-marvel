@@ -5,6 +5,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
+ * Obtiene comics paginados.
+ *
  * @author Adán Castillo.
  */
 class GetComics(

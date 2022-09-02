@@ -25,6 +25,9 @@ import com.rappi.marvel.databinding.FragmentComicListBinding
 import com.rappi.marvel.utils.viewBindings
 import dagger.hilt.android.AndroidEntryPoint
 
+/**
+ * Contiene la vista del listado de comics marvel.
+ */
 @AndroidEntryPoint
 class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextListener {
     companion object {

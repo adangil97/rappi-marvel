@@ -5,6 +5,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
+ * Realiza busqueda local de series.
+ *
  * @author Adán Castillo.
  */
 class SearchSeries(

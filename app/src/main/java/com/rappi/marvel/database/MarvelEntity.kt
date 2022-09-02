@@ -4,6 +4,8 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 /**
+ * Es una representación tanto del modelo comic como serie, para base de datos.
+ *
  * @author Adán Castillo.
  */
 @Entity

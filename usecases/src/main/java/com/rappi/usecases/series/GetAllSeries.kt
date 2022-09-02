@@ -5,6 +5,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
+ * Obtiene todas las series que hay almacenadas en local.
+ *
  * @author Adán Castillo.
  */
 class GetAllSeries(

@@ -12,6 +12,11 @@ import com.rappi.marvel.databinding.AdapterSeriesItemBinding
 import com.rappi.marvel.series.presentation.list.SeriesListAdapter.SeriesViewHolder
 
 /**
+ * Contiene la vista de item serie de marvel.
+ *
+ * @param items [MutableList] es el listado de series marvel.
+ * @param listener [Unit] permite informar sobre que elemento se dio click.
+ *
  * @author Adán Castillo.
  */
 class SeriesListAdapter(

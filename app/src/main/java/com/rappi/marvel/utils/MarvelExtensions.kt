@@ -6,6 +6,8 @@ import com.rappi.marvel.database.MarvelEntity
 import com.rappi.marvel.database.MarvelType
 
 /**
+ * Contiene funciones de conversión de modelos transferibles a modelos de base de datos.
+ *
  * @author Adán Castillo.
  */
 

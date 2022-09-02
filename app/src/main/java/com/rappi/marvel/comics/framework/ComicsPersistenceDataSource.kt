@@ -7,6 +7,10 @@ import com.rappi.marvel.utils.toComicDto
 import com.rappi.marvel.utils.toMarvelEntity
 
 /**
+ * Es la implementación del contrato de Comics locales.
+ *
+ * @param comicsDao [ComicsDao] contiene acceso a la tabla de comics marvel.
+ *
  * @author Adán Castillo.
  */
 class ComicsPersistenceDataSource(

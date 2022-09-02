@@ -5,6 +5,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
+ * Obtiene series paginadas.
+ *
  * @author Adán Castillo.
  */
 class GetSeries(

@@ -3,6 +3,8 @@ package com.rappi.marvel.comics.presentation.list
 import com.rappi.domain.comics.dto.ComicDto
 
 /**
+ * Definición de contrato de los diferentes efectos que podemos mostrar en UI de listado de comics marvel.
+ *
  * @author Adán Castillo.
  */
 sealed class ComicsListState {
