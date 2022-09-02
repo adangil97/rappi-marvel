@@ -31,7 +31,7 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextListener {
     companion object {
-        private const val ELEMENTS_TO_SCROLL = 10
+        private const val ELEMENTS_TO_SCROLL = 20
     }
 
     private val binding: FragmentSeriesListBinding by viewBindings()
@@ -39,13 +39,16 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
     private lateinit var seriesAdapter: SeriesListAdapter
     private var page = 0
     private var isSearching = false
+    private var isPaging = true
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        requireActivity().window?.statusBarColor = ContextCompat.getColor(requireContext(), R.color.background)
+        requireActivity().window?.statusBarColor =
+            ContextCompat.getColor(requireContext(), R.color.background)
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
         showMenu()
         showInitialLoading()
+        // Obtenemos la primera pagina.
         viewModel.onEvent(SeriesListEvent.OnGetSeries(page))
         viewModel.sideEffect.observe(viewLifecycleOwner) {
             it?.let { seriesState ->
@@ -71,12 +74,17 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
     private fun setListeners() {
         binding.rvSeries.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                val layoutManager = recyclerView.layoutManager as GridLayoutManager
-                val totalItemCount = layoutManager.itemCount
-                val lastVisible = layoutManager.findLastVisibleItemPosition()
-                val endHasBeenReached = lastVisible >= totalItemCount - ELEMENTS_TO_SCROLL
-                if (totalItemCount > 0 && endHasBeenReached && !isSearching) {
-                    viewModel.onEvent(SeriesListEvent.OnGetSeries(++page))
+                if (dy > 0) {
+                    val layoutManager = recyclerView.layoutManager as GridLayoutManager
+                    val totalItemCount = layoutManager.itemCount
+                    val lastVisible = layoutManager.findLastVisibleItemPosition()
+                    val endHasBeenReached = lastVisible >= totalItemCount - ELEMENTS_TO_SCROLL
+                    if (totalItemCount > 0 && endHasBeenReached && !isSearching) {
+                        if (!isPaging) {
+                            isPaging = true
+                            viewModel.onEvent(SeriesListEvent.OnGetSeries(++page))
+                        }
+                    }
                 }
             }
         })
@@ -102,6 +110,7 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
                 Toast.LENGTH_SHORT
             ).show()
             is SeriesListState.ShowSeries -> {
+                isPaging = false
                 binding.rvSeries.isGone = false
                 if (binding.viewShimmer.shimmer.isShimmerVisible)
                     hideInitialLoading()
@@ -167,6 +176,8 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
     }
 
     override fun onDestroyView() {
+        isPaging = true
+        page = 0
         viewModel.onEvent(SeriesListEvent.OnClearSideEffect)
         super.onDestroyView()
     }

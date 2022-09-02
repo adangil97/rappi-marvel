@@ -31,7 +31,7 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextListener {
     companion object {
-        private const val ELEMENTS_TO_SCROLL = 10
+        private const val ELEMENTS_TO_SCROLL = 20
     }
 
     private val binding: FragmentComicListBinding by viewBindings()
@@ -39,13 +39,16 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
     private lateinit var comicAdapter: ComicListAdapter
     private var page = 0
     private var isSearching = false
+    private var isPaging = true
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        requireActivity().window?.statusBarColor = ContextCompat.getColor(requireContext(), R.color.background)
+        requireActivity().window?.statusBarColor =
+            ContextCompat.getColor(requireContext(), R.color.background)
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
         showMenu()
         showInitialLoading()
+        // Obtenemos la primera pagina.
         viewModel.onEvent(ComicsListEvent.OnGetComics(page))
         viewModel.sideEffect.observe(viewLifecycleOwner) {
             it?.let { comicState ->
@@ -69,12 +72,17 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
     private fun setListeners() {
         binding.rvComics.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                val layoutManager = recyclerView.layoutManager as GridLayoutManager
-                val totalItemCount = layoutManager.itemCount
-                val lastVisible = layoutManager.findLastVisibleItemPosition()
-                val endHasBeenReached = lastVisible >= totalItemCount - ELEMENTS_TO_SCROLL
-                if (totalItemCount > 0 && endHasBeenReached && !isSearching) {
-                    viewModel.onEvent(ComicsListEvent.OnGetComics(++page))
+                if (dy > 0) {
+                    val layoutManager = recyclerView.layoutManager as GridLayoutManager
+                    val totalItemCount = layoutManager.itemCount
+                    val lastVisible = layoutManager.findLastVisibleItemPosition()
+                    val endHasBeenReached = lastVisible >= totalItemCount - ELEMENTS_TO_SCROLL
+                    if (totalItemCount > 0 && endHasBeenReached && !isSearching) {
+                        if (!isPaging){
+                            isPaging = true
+                            viewModel.onEvent(ComicsListEvent.OnGetComics(++page))
+                        }
+                    }
                 }
             }
         })
@@ -100,6 +108,7 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
                 Toast.LENGTH_SHORT
             ).show()
             is ComicsListState.ShowComics -> {
+                isPaging = false
                 binding.rvComics.isGone = false
                 if (binding.viewShimmer.shimmer.isShimmerVisible)
                     hideInitialLoading()
@@ -165,6 +174,8 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
     }
 
     override fun onDestroyView() {
+        isPaging = true
+        page = 0
         viewModel.onEvent(ComicsListEvent.OnClearSideEffect)
         super.onDestroyView()
     }

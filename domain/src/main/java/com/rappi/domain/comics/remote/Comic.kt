@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Comic(
-    val description: String,
+    val description: String?,
     val diamondCode: String,
     val digitalId: Int,
     val ean: String,

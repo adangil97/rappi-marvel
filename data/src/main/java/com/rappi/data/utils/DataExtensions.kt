@@ -19,7 +19,7 @@ fun Comic.toComicDto(): ComicDto =
     ComicDto(
         id = id,
         title = title,
-        description = description,
+        description = description ?: "",
         urlImage = "${thumbnail.path}.${thumbnail.extension}",
         time = modified.parseToDateMillis()
     )
