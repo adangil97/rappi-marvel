@@ -4,6 +4,8 @@
 
 <H2>Capas de la arquitectura</H2>
 
+![Android MVVM Clean Achitecture](https://cursokotlin.com/wp-content/uploads/2021/05/Android-Clean-Architecture.png)
+
 <ol>
   <li>
     <p>Presentación (app)</p>
@@ -45,5 +47,3 @@
     </ul>
   </li>
 <ol>
-
-![Android MVVM Clean Achitecture](https://cursokotlin.com/wp-content/uploads/2021/05/Android-Clean-Architecture.png)
