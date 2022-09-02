@@ -117,8 +117,9 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
             is ComicsListState.ShowSearchComics -> {
                 binding.rvComics.isGone = false
                 binding.tvEmpty.isGone = true
+                val size = comicAdapter.items.size
                 comicAdapter.items.clear()
-                comicAdapter.notifyItemRangeRemoved(0, comicAdapter.items.size)
+                comicAdapter.notifyItemRangeRemoved(0, size)
                 comicAdapter.items.addAll(comicState.comics)
                 comicAdapter.notifyItemRangeInserted(
                     comicAdapter.items.size,
