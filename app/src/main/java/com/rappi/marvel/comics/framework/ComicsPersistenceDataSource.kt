@@ -27,11 +27,11 @@ class ComicsPersistenceDataSource(
             it.toComicDto()
         }
 
-    override suspend fun insertComics(vararg comics: ComicDto) =
+    override suspend fun insertComics(comics: List<ComicDto>) =
         comicsDao.insert(
-            *comics.map {
+            comics.map {
                 it.toMarvelEntity()
-            }.toTypedArray()
+            }
         )
 
     override suspend fun searchComics(query: String): List<ComicDto> =

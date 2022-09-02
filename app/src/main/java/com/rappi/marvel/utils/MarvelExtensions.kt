@@ -16,7 +16,8 @@ fun MarvelEntity.toSerieDto(): SerieDto =
         id = id,
         title = title,
         description = description,
-        urlImage = urlImage
+        urlImage = urlImage,
+        time = time
     )
 
 fun SerieDto.toMarvelEntity(): MarvelEntity =
@@ -26,7 +27,7 @@ fun SerieDto.toMarvelEntity(): MarvelEntity =
         description = description,
         urlImage = urlImage,
         type = MarvelType.SERIES,
-        time = System.currentTimeMillis()
+        time = time
     )
 
 fun MarvelEntity.toComicDto(): ComicDto =
@@ -34,7 +35,8 @@ fun MarvelEntity.toComicDto(): ComicDto =
         id = id,
         title = title,
         description = description,
-        urlImage = urlImage
+        urlImage = urlImage,
+        time = time
     )
 
 fun ComicDto.toMarvelEntity(): MarvelEntity =
@@ -44,7 +46,7 @@ fun ComicDto.toMarvelEntity(): MarvelEntity =
         description = description,
         urlImage = urlImage,
         type = MarvelType.COMICS,
-        time = System.currentTimeMillis()
+        time = time
     )
 
 fun Int.toHexColor(): String =

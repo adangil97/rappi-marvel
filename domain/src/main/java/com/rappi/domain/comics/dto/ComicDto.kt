@@ -9,5 +9,6 @@ data class ComicDto(
     val id: Int,
     val title: String,
     val description: String,
-    val urlImage: String
+    val urlImage: String,
+    val time: Long
 )

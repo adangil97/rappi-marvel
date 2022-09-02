@@ -27,7 +27,7 @@ interface ComicsLocalDataSource {
      *
      * @param comics [ComicDto] array de los comics a insertar.
      */
-    suspend fun insertComics(vararg comics: ComicDto)
+    suspend fun insertComics(comics: List<ComicDto>)
 
     /**
      * Busca comics en local.

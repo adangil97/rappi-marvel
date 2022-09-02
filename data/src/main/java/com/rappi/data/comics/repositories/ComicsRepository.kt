@@ -33,7 +33,7 @@ class ComicsRepository(
             // Obtenemos los comics de la api.
             val remoteComics = comicsRemoteDataSource.getComics(offset)
             // Los integramos en la base de datos local.
-            comicsLocalDataSource.insertComics(*remoteComics.toTypedArray())
+            comicsLocalDataSource.insertComics(remoteComics)
             // Devolvemos el listado de comics locales.
             comicsLocalDataSource.getComics(offset, PAGE_SIZE)
         } catch (exception: Exception) {

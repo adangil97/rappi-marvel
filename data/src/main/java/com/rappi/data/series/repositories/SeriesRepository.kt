@@ -35,7 +35,7 @@ class SeriesRepository(
             // Obtenemos las series de la api.
             val remoteSeries = seriesRemoteDataSource.getSeries(offset)
             // Las integramos a la base de datos local.
-            seriesLocalDataSource.insertSeries(*remoteSeries.toTypedArray())
+            seriesLocalDataSource.insertSeries(remoteSeries)
             // Devolvemos el listado de las series locales.
             seriesLocalDataSource.getSeries(offset, PAGE_SIZE)
         } catch (exception: Exception) {

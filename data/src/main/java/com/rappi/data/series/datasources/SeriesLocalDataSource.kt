@@ -27,7 +27,7 @@ interface SeriesLocalDataSource {
      *
      * @param series [SerieDto] array de las series a insertar.
      */
-    suspend fun insertSeries(vararg series: SerieDto)
+    suspend fun insertSeries(series: List<SerieDto>)
 
     /**
      * Busca series en local.

@@ -27,11 +27,11 @@ class SeriesPersistenceDataSource(
             it.toSerieDto()
         }
 
-    override suspend fun insertSeries(vararg series: SerieDto) =
+    override suspend fun insertSeries(series: List<SerieDto>) =
         seriesDao.insert(
-            *series.map {
+            series.map {
                 it.toMarvelEntity()
-            }.toTypedArray()
+            }
         )
 
     override suspend fun searchSeries(query: String): List<SerieDto> =

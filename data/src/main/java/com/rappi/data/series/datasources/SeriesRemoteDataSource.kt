@@ -42,7 +42,7 @@ abstract class SeriesRemoteDataSource(
                 // Indicamos ordenamiento por fecha de modificación.
                 parameter(
                     "orderBy",
-                    "modified"
+                    "-modified"
                 )
             }.body()
             return response.data.results.map {

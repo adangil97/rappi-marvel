@@ -41,7 +41,7 @@ abstract class ComicsRemoteDataSource(
                 )
                 parameter(
                     "orderBy",
-                    "modified"
+                    "-modified"
                 )
             }.body()
             response.data.results.map {
