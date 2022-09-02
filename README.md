@@ -47,3 +47,6 @@
     </ul>
   </li>
 <ol>
+
+<H2>Posdata <p>Internamente cada clase esta documentada</p></H2>  
+  
