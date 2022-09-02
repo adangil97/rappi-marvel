@@ -25,9 +25,11 @@ class ComicsListViewModel @Inject constructor(
     private val mSideEffect = MutableLiveData<ComicsListState?>()
     val sideEffect: LiveData<ComicsListState?> get() = mSideEffect
 
+    private var page = -1
+
     fun onEvent(event: ComicsListEvent) {
         when (event) {
-            is ComicsListEvent.OnGetComics -> onGetComics(event.page)
+            ComicsListEvent.OnGetComics -> onGetComics()
             ComicsListEvent.OnClearSideEffect -> mSideEffect.value = null
             is ComicsListEvent.OnSearchComics -> {
                 if (event.query.isNotEmpty()) {
@@ -59,11 +61,12 @@ class ComicsListViewModel @Inject constructor(
         }
     }
 
-    private fun onGetComics(page: Int) {
+    private fun onGetComics() {
         viewModelScope.launch {
             try {
-                val comics = getComics(page)
-                if (comics.isEmpty() && page == 0)
+                // Obtenemos 3 paginas por llamada.
+                val comics = getComics(++page) + getComics(++page) + getComics(++page)
+                if (comics.isEmpty() && page == 2)
                     mSideEffect.value = ComicsListState.ShowEmpty
                 else
                     mSideEffect.value = ComicsListState.ShowComics(comics)

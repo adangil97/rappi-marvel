@@ -31,13 +31,12 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextListener {
     companion object {
-        private const val ELEMENTS_TO_SCROLL = 20
+        private const val ELEMENTS_TO_SCROLL = 60
     }
 
     private val binding: FragmentComicListBinding by viewBindings()
     private val viewModel: ComicsListViewModel by viewModels()
     private lateinit var comicAdapter: ComicListAdapter
-    private var page = 0
     private var isSearching = false
     private var isPaging = true
 
@@ -49,7 +48,7 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
         showMenu()
         showInitialLoading()
         // Obtenemos la primera pagina.
-        viewModel.onEvent(ComicsListEvent.OnGetComics(page))
+        viewModel.onEvent(ComicsListEvent.OnGetComics)
         viewModel.sideEffect.observe(viewLifecycleOwner) {
             it?.let { comicState ->
                 takeActionOn(comicState)
@@ -76,11 +75,11 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
                     val layoutManager = recyclerView.layoutManager as GridLayoutManager
                     val totalItemCount = layoutManager.itemCount
                     val lastVisible = layoutManager.findLastVisibleItemPosition()
-                    val endHasBeenReached = lastVisible >= totalItemCount - ELEMENTS_TO_SCROLL
+                    val endHasBeenReached = lastVisible >= (totalItemCount - ELEMENTS_TO_SCROLL)
                     if (totalItemCount > 0 && endHasBeenReached && !isSearching) {
                         if (!isPaging){
                             isPaging = true
-                            viewModel.onEvent(ComicsListEvent.OnGetComics(++page))
+                            viewModel.onEvent(ComicsListEvent.OnGetComics)
                         }
                     }
                 }
@@ -175,7 +174,6 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
 
     override fun onDestroyView() {
         isPaging = true
-        page = 0
         viewModel.onEvent(ComicsListEvent.OnClearSideEffect)
         super.onDestroyView()
     }

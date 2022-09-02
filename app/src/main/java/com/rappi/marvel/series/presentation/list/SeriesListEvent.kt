@@ -7,9 +7,7 @@ package com.rappi.marvel.series.presentation.list
  */
 sealed class SeriesListEvent {
 
-    data class OnGetSeries(
-        val page: Int = 0
-    ) : SeriesListEvent()
+    object OnGetSeries: SeriesListEvent()
 
     data class OnSearchSeries(
         val query: String

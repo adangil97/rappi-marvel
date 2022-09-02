@@ -25,9 +25,11 @@ class SeriesListViewModel @Inject constructor(
     private val mSideEffect = MutableLiveData<SeriesListState?>()
     val sideEffect: LiveData<SeriesListState?> get() = mSideEffect
 
+    private var page = -1
+
     fun onEvent(event: SeriesListEvent) {
         when (event) {
-            is SeriesListEvent.OnGetSeries -> onGetSeries(event.page)
+            SeriesListEvent.OnGetSeries -> onGetSeries()
             SeriesListEvent.OnClearSideEffect -> mSideEffect.value = null
             is SeriesListEvent.OnSearchSeries -> {
                 if (event.query.isNotEmpty()) {
@@ -59,11 +61,12 @@ class SeriesListViewModel @Inject constructor(
         }
     }
 
-    private fun onGetSeries(page: Int) {
+    private fun onGetSeries() {
         viewModelScope.launch {
             try {
-                val series = getSeries(page)
-                if (series.isEmpty() && page == 0)
+                // Obtenemos 3 paginas por llamada.
+                val series = getSeries(++page) + getSeries(++page) + getSeries(++page)
+                if (series.isEmpty() && page == 2)
                     mSideEffect.value = SeriesListState.ShowEmpty
                 else
                     mSideEffect.value = SeriesListState.ShowSeries(series)

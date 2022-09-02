@@ -31,13 +31,12 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextListener {
     companion object {
-        private const val ELEMENTS_TO_SCROLL = 20
+        private const val ELEMENTS_TO_SCROLL = 60
     }
 
     private val binding: FragmentSeriesListBinding by viewBindings()
     private val viewModel: SeriesListViewModel by viewModels()
     private lateinit var seriesAdapter: SeriesListAdapter
-    private var page = 0
     private var isSearching = false
     private var isPaging = true
 
@@ -49,7 +48,7 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
         showMenu()
         showInitialLoading()
         // Obtenemos la primera pagina.
-        viewModel.onEvent(SeriesListEvent.OnGetSeries(page))
+        viewModel.onEvent(SeriesListEvent.OnGetSeries)
         viewModel.sideEffect.observe(viewLifecycleOwner) {
             it?.let { seriesState ->
                 takeActionOn(seriesState)
@@ -78,11 +77,11 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
                     val layoutManager = recyclerView.layoutManager as GridLayoutManager
                     val totalItemCount = layoutManager.itemCount
                     val lastVisible = layoutManager.findLastVisibleItemPosition()
-                    val endHasBeenReached = lastVisible >= totalItemCount - ELEMENTS_TO_SCROLL
+                    val endHasBeenReached = lastVisible >= (totalItemCount - ELEMENTS_TO_SCROLL)
                     if (totalItemCount > 0 && endHasBeenReached && !isSearching) {
                         if (!isPaging) {
                             isPaging = true
-                            viewModel.onEvent(SeriesListEvent.OnGetSeries(++page))
+                            viewModel.onEvent(SeriesListEvent.OnGetSeries)
                         }
                     }
                 }
@@ -177,7 +176,6 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
 
     override fun onDestroyView() {
         isPaging = true
-        page = 0
         viewModel.onEvent(SeriesListEvent.OnClearSideEffect)
         super.onDestroyView()
     }
