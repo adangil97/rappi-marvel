@@ -1,5 +1,6 @@
 package com.rappi.data.series.repositories
 
+import com.rappi.data.DataConstants
 import com.rappi.data.series.datasources.SeriesLocalDataSource
 import com.rappi.data.series.datasources.SeriesRemoteDataSource
 import com.rappi.domain.series.dto.SerieDto
@@ -13,9 +14,6 @@ class SeriesRepository(
     private val seriesRemoteDataSource: SeriesRemoteDataSource,
     private val seriesLocalDataSource: SeriesLocalDataSource
 ) {
-    companion object {
-        private const val PAGE_SIZE = 20
-    }
 
     /**
      * Obtiene un listado de series paginado.
@@ -30,17 +28,17 @@ class SeriesRepository(
 
             Así las capas superiores ya solo deben entregar una pagina incrementable.
         */
-        val offset = pageNumber * PAGE_SIZE
+        val offset = pageNumber * DataConstants.PAGE_SIZE
         return try {
             // Obtenemos las series de la api.
             val remoteSeries = seriesRemoteDataSource.getSeries(offset)
             // Las integramos a la base de datos local.
             seriesLocalDataSource.insertSeries(remoteSeries)
             // Devolvemos el listado de las series locales.
-            seriesLocalDataSource.getSeries(offset, PAGE_SIZE)
+            seriesLocalDataSource.getSeries(offset, DataConstants.PAGE_SIZE)
         } catch (exception: Exception) {
             // Si ocurre un error devolvemos el listado de las series locales si hay.
-            seriesLocalDataSource.getSeries(offset, PAGE_SIZE)
+            seriesLocalDataSource.getSeries(offset, DataConstants.PAGE_SIZE)
         }
     }
 

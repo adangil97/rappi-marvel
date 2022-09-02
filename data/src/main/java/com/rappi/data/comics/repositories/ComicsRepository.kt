@@ -1,5 +1,6 @@
 package com.rappi.data.comics.repositories
 
+import com.rappi.data.DataConstants
 import com.rappi.data.comics.datasources.ComicsLocalDataSource
 import com.rappi.data.comics.datasources.ComicsRemoteDataSource
 import com.rappi.domain.comics.dto.ComicDto
@@ -11,9 +12,6 @@ class ComicsRepository(
     private val comicsRemoteDataSource: ComicsRemoteDataSource,
     private val comicsLocalDataSource: ComicsLocalDataSource
 ) {
-    companion object {
-        private const val PAGE_SIZE = 20
-    }
 
     /**
      * Obtiene un listado de comics paginados.
@@ -28,17 +26,17 @@ class ComicsRepository(
 
             Así las capas superiores ya solo deben entregar una pagina incrementable.
         */
-        val offset = page * PAGE_SIZE
+        val offset = page * DataConstants.PAGE_SIZE
         return try {
             // Obtenemos los comics de la api.
             val remoteComics = comicsRemoteDataSource.getComics(offset)
             // Los integramos en la base de datos local.
             comicsLocalDataSource.insertComics(remoteComics)
             // Devolvemos el listado de comics locales.
-            comicsLocalDataSource.getComics(offset, PAGE_SIZE)
+            comicsLocalDataSource.getComics(offset, DataConstants.PAGE_SIZE)
         } catch (exception: Exception) {
             // Si ocurre un error devolvemos el listado de comics locales.
-            comicsLocalDataSource.getComics(offset, PAGE_SIZE)
+            comicsLocalDataSource.getComics(offset, DataConstants.PAGE_SIZE)
         }
     }
 
