@@ -8,8 +8,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.rappi.domain.series.dto.SerieDto
 import com.rappi.marvel.R
+import com.rappi.marvel.databinding.AdapterItemLoadingShimmerBinding
 import com.rappi.marvel.databinding.AdapterSeriesItemBinding
-import com.rappi.marvel.series.presentation.list.SeriesListAdapter.SeriesViewHolder
 
 /**
  * Contiene la vista de item serie de marvel.
@@ -20,9 +20,18 @@ import com.rappi.marvel.series.presentation.list.SeriesListAdapter.SeriesViewHol
  * @author Adán Castillo.
  */
 class SeriesListAdapter(
-    val items: MutableList<SerieDto>,
+    val items: MutableList<SeriesAdapterItemType>,
     private val listener: (SerieDto) -> Unit
-) : RecyclerView.Adapter<SeriesViewHolder>() {
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+    companion object {
+        private const val TYPE_ITEM = 0
+        private const val TYPE_LOADING = 1
+    }
+
+    inner class SeriesLoadingViewHolder(
+        binding: AdapterItemLoadingShimmerBinding
+    ) : RecyclerView.ViewHolder(binding.root)
 
     inner class SeriesViewHolder(
         private val binding: AdapterSeriesItemBinding
@@ -32,7 +41,8 @@ class SeriesListAdapter(
                 val position = adapterPosition
                 if (position != RecyclerView.NO_POSITION) {
                     val item = items[position]
-                    listener(item)
+                    if (item is SeriesAdapterItemType.SerieDtoType)
+                        listener(item.serieDto)
                 }
             }
         }
@@ -46,17 +56,33 @@ class SeriesListAdapter(
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SeriesViewHolder =
-        SeriesViewHolder(
-            AdapterSeriesItemBinding.bind(
-                LayoutInflater.from(parent.context)
-                    .inflate(R.layout.adapter_series_item, parent, false)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder =
+        if (viewType == TYPE_ITEM) {
+            SeriesViewHolder(
+                AdapterSeriesItemBinding.bind(
+                    LayoutInflater.from(parent.context)
+                        .inflate(R.layout.adapter_series_item, parent, false)
+                )
             )
-        )
+        } else {
+            SeriesLoadingViewHolder(
+                AdapterItemLoadingShimmerBinding.bind(
+                    LayoutInflater.from(parent.context)
+                        .inflate(R.layout.adapter_item_loading_shimmer, parent, false)
+                )
+            )
+        }
 
-    override fun onBindViewHolder(holder: SeriesViewHolder, position: Int) {
+    override fun getItemViewType(position: Int): Int =
+        when (items[position]) {
+            is SeriesAdapterItemType.SerieDtoType -> TYPE_ITEM
+            SeriesAdapterItemType.SerieLoadingType -> TYPE_LOADING
+        }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val item = items[position]
-        holder.bind(item)
+        if (item is SeriesAdapterItemType.SerieDtoType)
+            (holder as SeriesViewHolder).bind(item.serieDto)
     }
 
     override fun getItemCount(): Int = items.size

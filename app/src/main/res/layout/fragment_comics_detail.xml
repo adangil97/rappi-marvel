@@ -60,7 +60,7 @@
         android:layout_margin="24dp"
         android:clickable="true"
         android:focusable="true"
-        app:cardBackgroundColor="@color/transparent"
+        app:cardBackgroundColor="@color/semi_transparent"
         app:cardCornerRadius="12dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">

@@ -11,5 +11,7 @@
     <color name="background_shadow">#80000000</color>
     <color name="shimmer_color">#C2C2C2</color>
     <color name="gold">#E9C13F</color>
-    <color name="transparent">#E67F7F7F</color>
+    <color name="semi_transparent">#E67F7F7F</color>
+    <color name="unchecked_gray">#393636</color>
+    <color name="transparent">#00000000</color>
 </resources>

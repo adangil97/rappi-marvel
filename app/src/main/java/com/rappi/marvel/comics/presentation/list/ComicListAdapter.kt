@@ -8,8 +8,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.rappi.domain.comics.dto.ComicDto
 import com.rappi.marvel.R
-import com.rappi.marvel.comics.presentation.list.ComicListAdapter.ComicsViewHolder
 import com.rappi.marvel.databinding.AdapterComicsItemBinding
+import com.rappi.marvel.databinding.AdapterItemLoadingShimmerBinding
 
 /**
  * Contiene la vista de item comic de marvel.
@@ -20,9 +20,18 @@ import com.rappi.marvel.databinding.AdapterComicsItemBinding
  * @author Adán Castillo.
  */
 class ComicListAdapter(
-    val items: MutableList<ComicDto>,
+    val items: MutableList<ComicsAdapterItemType>,
     private val listener: (ComicDto) -> Unit
-) : RecyclerView.Adapter<ComicsViewHolder>() {
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+    companion object {
+        private const val TYPE_ITEM = 0
+        private const val TYPE_LOADING = 1
+    }
+
+    inner class ComicsLoadingViewHolder(
+        binding: AdapterItemLoadingShimmerBinding
+    ) : RecyclerView.ViewHolder(binding.root)
 
     inner class ComicsViewHolder(
         private val binding: AdapterComicsItemBinding
@@ -32,7 +41,8 @@ class ComicListAdapter(
                 val position = adapterPosition
                 if (position != RecyclerView.NO_POSITION) {
                     val item = items[position]
-                    listener(item)
+                    if (item is ComicsAdapterItemType.ComicDtoType)
+                        listener(item.comicDto)
                 }
             }
         }
@@ -46,17 +56,33 @@ class ComicListAdapter(
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ComicsViewHolder =
-        ComicsViewHolder(
-            AdapterComicsItemBinding.bind(
-                LayoutInflater.from(parent.context)
-                    .inflate(R.layout.adapter_comics_item, parent, false)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder =
+        if (viewType == TYPE_ITEM) {
+            ComicsViewHolder(
+                AdapterComicsItemBinding.bind(
+                    LayoutInflater.from(parent.context)
+                        .inflate(R.layout.adapter_comics_item, parent, false)
+                )
             )
-        )
+        } else {
+            ComicsLoadingViewHolder(
+                AdapterItemLoadingShimmerBinding.bind(
+                    LayoutInflater.from(parent.context)
+                        .inflate(R.layout.adapter_item_loading_shimmer, parent, false)
+                )
+            )
+        }
 
-    override fun onBindViewHolder(holder: ComicsViewHolder, position: Int) {
+    override fun getItemViewType(position: Int): Int =
+        when (items[position]) {
+            is ComicsAdapterItemType.ComicDtoType -> TYPE_ITEM
+            ComicsAdapterItemType.ComicLoadingType -> TYPE_LOADING
+        }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val item = items[position]
-        holder.bind(item)
+        if (item is ComicsAdapterItemType.ComicDtoType)
+            (holder as ComicsViewHolder).bind(item.comicDto)
     }
 
     override fun getItemCount(): Int = items.size

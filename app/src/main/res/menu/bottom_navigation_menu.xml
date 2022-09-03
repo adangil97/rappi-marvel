@@ -3,11 +3,11 @@
     <item
         android:id="@+id/series"
         android:enabled="true"
-        android:icon="@drawable/icon_series"
-        android:title="@string/menu_title_series"/>
+        android:icon="@drawable/tab_icon_series"
+        android:title="@string/menu_title_series" />
     <item
         android:id="@+id/comics"
         android:enabled="true"
-        android:icon="@drawable/icon_comics"
-        android:title="@string/menu_title_comics"/>
+        android:icon="@drawable/tab_icon_comics"
+        android:title="@string/menu_title_comics" />
 </menu>

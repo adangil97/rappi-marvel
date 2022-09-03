@@ -25,12 +25,15 @@ class ComicsListViewModel @Inject constructor(
     private val mSideEffect = MutableLiveData<ComicsListState?>()
     val sideEffect: LiveData<ComicsListState?> get() = mSideEffect
 
-    private var page = -1
+    private var page = 0
 
     fun onEvent(event: ComicsListEvent) {
         when (event) {
             ComicsListEvent.OnGetComics -> onGetComics()
-            ComicsListEvent.OnClearSideEffect -> mSideEffect.value = null
+            ComicsListEvent.OnClearSideEffect -> {
+                page = 0
+                mSideEffect.value = null
+            }
             is ComicsListEvent.OnSearchComics -> {
                 if (event.query.isNotEmpty()) {
                     onSearchComics(event.query)
@@ -45,7 +48,11 @@ class ComicsListViewModel @Inject constructor(
         viewModelScope.launch {
             val comics = getAllComics()
             if (comics.isNotEmpty())
-                mSideEffect.value = ComicsListState.ShowSearchComics(comics)
+                mSideEffect.value = ComicsListState.ShowSearchComics(
+                    comics.map {
+                        ComicsAdapterItemType.ComicDtoType(it)
+                    }
+                )
             else
                 mSideEffect.value = ComicsListState.ShowEmpty
         }
@@ -55,7 +62,11 @@ class ComicsListViewModel @Inject constructor(
         viewModelScope.launch {
             val comics = searchComics(query)
             if (comics.isNotEmpty())
-                mSideEffect.value = ComicsListState.ShowSearchComics(comics)
+                mSideEffect.value = ComicsListState.ShowSearchComics(
+                    comics.map {
+                        ComicsAdapterItemType.ComicDtoType(it)
+                    }
+                )
             else
                 mSideEffect.value = ComicsListState.ShowEmpty
         }
@@ -65,16 +76,27 @@ class ComicsListViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 // Obtenemos 3 paginas por llamada.
-                val comics = getComics(++page) + getComics(++page) + getComics(++page)
-                if (comics.isEmpty() && page == 2)
+                val comics = getComics(page)
+                if (comics.isEmpty() && page == 0)
                     mSideEffect.value = ComicsListState.ShowEmpty
-                else
-                    mSideEffect.value = ComicsListState.ShowComics(comics)
+                else {
+                    page += 1
+                    mSideEffect.value = ComicsListState.ShowComics(
+                        comics.map {
+                            ComicsAdapterItemType.ComicDtoType(it)
+                        }
+                    )
+                }
             } catch (exception: Exception) {
                 exception.printStackTrace()
-                mSideEffect.value = ComicsListState.ShowGenericError(
-                    exception.localizedMessage ?: exception.message ?: "Unknown Error"
-                )
+                if (page == 0)
+                    mSideEffect.value = ComicsListState.ShowPlaceholderError(
+                        exception.localizedMessage ?: exception.message ?: "Unknown Error"
+                    )
+                else
+                    mSideEffect.value = ComicsListState.ShowGenericError(
+                        exception.localizedMessage ?: exception.message ?: "Unknown Error"
+                    )
             }
         }
     }

@@ -6,7 +6,6 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
@@ -20,6 +19,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 import com.rappi.marvel.R
 import com.rappi.marvel.databinding.FragmentSeriesListBinding
 import com.rappi.marvel.utils.viewBindings
@@ -31,7 +31,8 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextListener {
     companion object {
-        private const val ELEMENTS_TO_SCROLL = 60
+        private const val ELEMENTS_TO_SCROLL = 50
+        private const val SPAN_COUNT = 3
     }
 
     private val binding: FragmentSeriesListBinding by viewBindings()
@@ -63,7 +64,7 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
             findNavController().navigate(action)
         }
         binding.rvSeries.apply {
-            layoutManager = GridLayoutManager(requireContext(), 3)
+            layoutManager = GridLayoutManager(requireContext(), SPAN_COUNT)
             adapter = seriesAdapter
         }
 
@@ -75,14 +76,41 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 if (dy > 0) {
                     val layoutManager = recyclerView.layoutManager as GridLayoutManager
-                    val totalItemCount = layoutManager.itemCount
                     val lastVisible = layoutManager.findLastVisibleItemPosition()
+                    val totalItemCount = layoutManager.itemCount
                     val endHasBeenReached = lastVisible >= (totalItemCount - ELEMENTS_TO_SCROLL)
                     if (totalItemCount > 0 && endHasBeenReached && !isSearching) {
                         if (!isPaging) {
                             isPaging = true
                             viewModel.onEvent(SeriesListEvent.OnGetSeries)
                         }
+                    }
+                }
+            }
+
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                // Si el usuario llego al final de la lista.
+                if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    val layoutManager = recyclerView.layoutManager as GridLayoutManager
+                    val itemCount = layoutManager.itemCount
+                    // Obtenemos el ultimo item de la lista
+                    val lastItemType = seriesAdapter.items[itemCount - 1]
+                    // Si no es de tipo loading.
+                    if (lastItemType !is SeriesAdapterItemType.SerieLoadingType) {
+                        // Obtenemos cuantos items quedaron en la ultima fila.
+                        val lastItemsCount = itemCount % SPAN_COUNT
+                        // Obtenemos cuantos items faltan para llenar la fila.
+                        val countItems = SPAN_COUNT - lastItemsCount
+                        // Llenamos la fila con items de tipo loading para indicar operación en curso.
+                        val loadingItemList = IntArray(countItems).map {
+                            SeriesAdapterItemType.SerieLoadingType
+                        }
+                        seriesAdapter.items.addAll(loadingItemList)
+                        seriesAdapter.notifyItemRangeInserted(
+                            seriesAdapter.items.size,
+                            countItems
+                        )
                     }
                 }
             }
@@ -103,12 +131,26 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
 
     private fun takeActionOn(seriesState: SeriesListState) {
         when (seriesState) {
-            is SeriesListState.ShowGenericError -> Toast.makeText(
-                requireContext(),
-                seriesState.errorMessage,
-                Toast.LENGTH_SHORT
-            ).show()
+            is SeriesListState.ShowGenericError -> {
+                val snack = Snackbar.make(
+                    requireView(),
+                    seriesState.errorMessage,
+                    Snackbar.LENGTH_INDEFINITE
+                )
+                snack.setAction("Ok") {
+                    snack.dismiss()
+                }
+                snack.show()
+                hideInitialLoading()
+            }
             is SeriesListState.ShowSeries -> {
+                val loadingItems =
+                    seriesAdapter.items.filterIsInstance<SeriesAdapterItemType.SerieLoadingType>()
+                seriesAdapter.items.removeAll(loadingItems)
+                seriesAdapter.notifyItemRangeRemoved(
+                    seriesAdapter.items.size - loadingItems.size,
+                    loadingItems.size
+                )
                 isPaging = false
                 binding.rvSeries.isGone = false
                 if (binding.viewShimmer.shimmer.isShimmerVisible)
@@ -122,11 +164,11 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
             SeriesListState.ShowEmpty -> {
                 hideInitialLoading()
                 binding.rvSeries.isGone = true
-                binding.tvEmpty.isGone = false
+                binding.tvError.isGone = false
             }
             is SeriesListState.ShowSearchSeries -> {
                 binding.rvSeries.isGone = false
-                binding.tvEmpty.isGone = true
+                binding.tvError.isGone = true
                 val size = seriesAdapter.items.size
                 seriesAdapter.items.clear()
                 seriesAdapter.notifyItemRangeRemoved(0, size)
@@ -135,6 +177,11 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
                     seriesAdapter.items.size,
                     seriesState.series.size
                 )
+            }
+            is SeriesListState.ShowPlaceholderError -> {
+                hideInitialLoading()
+                binding.rvSeries.isGone = true
+                binding.tvError.text = seriesState.errorMessage
             }
         }
     }
@@ -163,7 +210,7 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
             }
 
             override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
-                binding.tvEmpty.isGone = true
+                binding.tvError.isGone = true
                 isSearching = false
                 return true
             }

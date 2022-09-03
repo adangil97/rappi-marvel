@@ -3,8 +3,18 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="app/src/main/res/drawable/backgrand_nav_item.xml" value="0.1325" />
+        <entry key="app/src/main/res/drawable/tab_icon_comics.xml" value="0.1325" />
+        <entry key="app/src/main/res/drawable/tab_icon_series.xml" value="0.1195" />
+        <entry key="app/src/main/res/layout/activity_marvel.xml" value="0.25" />
+        <entry key="app/src/main/res/layout/adapter_item_loading_shimmer.xml" value="0.246875" />
+        <entry key="app/src/main/res/layout/adapter_item_shimmer.xml" value="0.24791666666666667" />
+        <entry key="app/src/main/res/layout/adapter_series_item.xml" value="0.24791666666666667" />
         <entry key="app/src/main/res/layout/fragment_comics_detail.xml" value="0.24791666666666667" />
         <entry key="app/src/main/res/layout/fragment_series_detail.xml" value="0.24791666666666667" />
+        <entry key="app/src/main/res/layout/fragment_series_list.xml" value="0.24791666666666667" />
+        <entry key="app/src/main/res/layout/shimmer_view.xml" value="0.20462962962962963" />
+        <entry key="app/src/main/res/menu/bottom_navigation_menu.xml" value="0.1" />
       </map>
     </option>
   </component>

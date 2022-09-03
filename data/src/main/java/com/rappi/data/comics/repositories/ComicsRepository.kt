@@ -27,17 +27,12 @@ class ComicsRepository(
             Así las capas superiores ya solo deben entregar una pagina incrementable.
         */
         val offset = page * DataConstants.PAGE_SIZE
-        return try {
-            // Obtenemos los comics de la api.
-            val remoteComics = comicsRemoteDataSource.getComics(offset)
-            // Los integramos en la base de datos local.
-            comicsLocalDataSource.insertComics(remoteComics)
-            // Devolvemos el listado de comics locales.
-            comicsLocalDataSource.getComics(offset, DataConstants.PAGE_SIZE)
-        } catch (exception: Exception) {
-            // Si ocurre un error devolvemos el listado de comics locales.
-            comicsLocalDataSource.getComics(offset, DataConstants.PAGE_SIZE)
-        }
+        // Obtenemos los comics de la api.
+        val remoteComics = comicsRemoteDataSource.getComics(offset)
+        // Los integramos en la base de datos local.
+        comicsLocalDataSource.insertComics(remoteComics)
+        // Devolvemos el listado de comics locales.
+        return comicsLocalDataSource.getComics(offset, DataConstants.PAGE_SIZE)
     }
 
     /**

@@ -6,7 +6,6 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
@@ -20,6 +19,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 import com.rappi.marvel.R
 import com.rappi.marvel.databinding.FragmentComicListBinding
 import com.rappi.marvel.utils.viewBindings
@@ -31,7 +31,8 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextListener {
     companion object {
-        private const val ELEMENTS_TO_SCROLL = 60
+        private const val ELEMENTS_TO_SCROLL = 50
+        private const val SPAN_COUNT = 3
     }
 
     private val binding: FragmentComicListBinding by viewBindings()
@@ -62,7 +63,7 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
             findNavController().navigate(action)
         }
         binding.rvComics.apply {
-            layoutManager = GridLayoutManager(requireContext(), 3)
+            layoutManager = GridLayoutManager(requireContext(), SPAN_COUNT)
             adapter = comicAdapter
         }
         setListeners()
@@ -77,10 +78,37 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
                     val lastVisible = layoutManager.findLastVisibleItemPosition()
                     val endHasBeenReached = lastVisible >= (totalItemCount - ELEMENTS_TO_SCROLL)
                     if (totalItemCount > 0 && endHasBeenReached && !isSearching) {
-                        if (!isPaging){
+                        if (!isPaging) {
                             isPaging = true
                             viewModel.onEvent(ComicsListEvent.OnGetComics)
                         }
+                    }
+                }
+            }
+
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                // Si el usuario llego al final de la lista.
+                if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    val layoutManager = recyclerView.layoutManager as GridLayoutManager
+                    val itemCount = layoutManager.itemCount
+                    // Obtenemos el ultimo item de la lista
+                    val lastItemType = comicAdapter.items[itemCount - 1]
+                    // Si no es de tipo loading.
+                    if (lastItemType !is ComicsAdapterItemType.ComicLoadingType) {
+                        // Obtenemos cuantos items quedaron en la ultima fila.
+                        val lastItemsCount = itemCount % SPAN_COUNT
+                        // Obtenemos cuantos items faltan para llenar la fila.
+                        val countItems = SPAN_COUNT - lastItemsCount
+                        // Llenamos la fila con items de tipo loading para indicar operación en curso.
+                        val loadingItemList = IntArray(countItems).map {
+                            ComicsAdapterItemType.ComicLoadingType
+                        }
+                        comicAdapter.items.addAll(loadingItemList)
+                        comicAdapter.notifyItemRangeInserted(
+                            comicAdapter.items.size,
+                            countItems
+                        )
                     }
                 }
             }
@@ -101,12 +129,26 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
 
     private fun takeActionOn(comicState: ComicsListState) {
         when (comicState) {
-            is ComicsListState.ShowGenericError -> Toast.makeText(
-                requireContext(),
-                comicState.errorMessage,
-                Toast.LENGTH_SHORT
-            ).show()
+            is ComicsListState.ShowGenericError -> {
+                val snack = Snackbar.make(
+                    requireView(),
+                    comicState.errorMessage,
+                    Snackbar.LENGTH_INDEFINITE
+                )
+                snack.setAction("Ok") {
+                    snack.dismiss()
+                }
+                snack.show()
+                hideInitialLoading()
+            }
             is ComicsListState.ShowComics -> {
+                val loadingItems =
+                    comicAdapter.items.filterIsInstance<ComicsAdapterItemType.ComicLoadingType>()
+                comicAdapter.items.removeAll(loadingItems)
+                comicAdapter.notifyItemRangeRemoved(
+                    comicAdapter.items.size - loadingItems.size,
+                    loadingItems.size
+                )
                 isPaging = false
                 binding.rvComics.isGone = false
                 if (binding.viewShimmer.shimmer.isShimmerVisible)
@@ -120,11 +162,11 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
             ComicsListState.ShowEmpty -> {
                 hideInitialLoading()
                 binding.rvComics.isGone = true
-                binding.tvEmpty.isGone = false
+                binding.tvError.isGone = false
             }
             is ComicsListState.ShowSearchComics -> {
                 binding.rvComics.isGone = false
-                binding.tvEmpty.isGone = true
+                binding.tvError.isGone = true
                 val size = comicAdapter.items.size
                 comicAdapter.items.clear()
                 comicAdapter.notifyItemRangeRemoved(0, size)
@@ -133,6 +175,11 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
                     comicAdapter.items.size,
                     comicState.comics.size
                 )
+            }
+            is ComicsListState.ShowPlaceholderError -> {
+                hideInitialLoading()
+                binding.rvComics.isGone = true
+                binding.tvError.text = comicState.errorMessage
             }
         }
     }
@@ -161,7 +208,7 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
             }
 
             override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
-                binding.tvEmpty.isGone = true
+                binding.tvError.isGone = true
                 isSearching = false
                 return true
             }

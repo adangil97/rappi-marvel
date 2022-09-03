@@ -25,12 +25,15 @@ class SeriesListViewModel @Inject constructor(
     private val mSideEffect = MutableLiveData<SeriesListState?>()
     val sideEffect: LiveData<SeriesListState?> get() = mSideEffect
 
-    private var page = -1
+    private var page = 0
 
     fun onEvent(event: SeriesListEvent) {
         when (event) {
             SeriesListEvent.OnGetSeries -> onGetSeries()
-            SeriesListEvent.OnClearSideEffect -> mSideEffect.value = null
+            SeriesListEvent.OnClearSideEffect -> {
+                page = 0
+                mSideEffect.value = null
+            }
             is SeriesListEvent.OnSearchSeries -> {
                 if (event.query.isNotEmpty()) {
                     onSearchSeries(event.query)
@@ -45,7 +48,11 @@ class SeriesListViewModel @Inject constructor(
         viewModelScope.launch {
             val series = getAllSeries()
             if (series.isNotEmpty())
-                mSideEffect.value = SeriesListState.ShowSearchSeries(series)
+                mSideEffect.value = SeriesListState.ShowSearchSeries(
+                    series.map {
+                        SeriesAdapterItemType.SerieDtoType(it)
+                    }
+                )
             else
                 mSideEffect.value = SeriesListState.ShowEmpty
         }
@@ -55,7 +62,11 @@ class SeriesListViewModel @Inject constructor(
         viewModelScope.launch {
             val series = searchSeries(query)
             if (series.isNotEmpty())
-                mSideEffect.value = SeriesListState.ShowSearchSeries(series)
+                mSideEffect.value = SeriesListState.ShowSearchSeries(
+                    series.map {
+                        SeriesAdapterItemType.SerieDtoType(it)
+                    }
+                )
             else
                 mSideEffect.value = SeriesListState.ShowEmpty
         }
@@ -64,17 +75,27 @@ class SeriesListViewModel @Inject constructor(
     private fun onGetSeries() {
         viewModelScope.launch {
             try {
-                // Obtenemos 3 paginas por llamada.
-                val series = getSeries(++page) + getSeries(++page) + getSeries(++page)
-                if (series.isEmpty() && page == 2)
+                val series = getSeries(page)
+                if (series.isEmpty() && page == 0)
                     mSideEffect.value = SeriesListState.ShowEmpty
-                else
-                    mSideEffect.value = SeriesListState.ShowSeries(series)
+                else {
+                    page += 1
+                    mSideEffect.value = SeriesListState.ShowSeries(
+                        series.map {
+                            SeriesAdapterItemType.SerieDtoType(it)
+                        }
+                    )
+                }
             } catch (exception: Exception) {
                 exception.printStackTrace()
-                mSideEffect.value = SeriesListState.ShowGenericError(
-                    exception.localizedMessage ?: exception.message ?: "Unknown Error"
-                )
+                if (page == 0)
+                    mSideEffect.value = SeriesListState.ShowPlaceholderError(
+                        exception.localizedMessage ?: exception.message ?: "Unknown Error"
+                    )
+                else
+                    mSideEffect.value = SeriesListState.ShowGenericError(
+                        exception.localizedMessage ?: exception.message ?: "Unknown Error"
+                    )
             }
         }
     }

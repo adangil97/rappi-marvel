@@ -29,17 +29,12 @@ class SeriesRepository(
             Así las capas superiores ya solo deben entregar una pagina incrementable.
         */
         val offset = pageNumber * DataConstants.PAGE_SIZE
-        return try {
-            // Obtenemos las series de la api.
-            val remoteSeries = seriesRemoteDataSource.getSeries(offset)
-            // Las integramos a la base de datos local.
-            seriesLocalDataSource.insertSeries(remoteSeries)
-            // Devolvemos el listado de las series locales.
-            seriesLocalDataSource.getSeries(offset, DataConstants.PAGE_SIZE)
-        } catch (exception: Exception) {
-            // Si ocurre un error devolvemos el listado de las series locales si hay.
-            seriesLocalDataSource.getSeries(offset, DataConstants.PAGE_SIZE)
-        }
+        // Obtenemos las series de la api.
+        val remoteSeries = seriesRemoteDataSource.getSeries(offset)
+        // Las integramos a la base de datos local.
+        seriesLocalDataSource.insertSeries(remoteSeries)
+        // Devolvemos el listado de las series locales.
+        return seriesLocalDataSource.getSeries(offset, DataConstants.PAGE_SIZE)
     }
 
     /**
