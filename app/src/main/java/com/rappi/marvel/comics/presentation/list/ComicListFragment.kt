@@ -113,6 +113,12 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
                 }
             }
         })
+        binding.btnRetry.setOnClickListener {
+            binding.btnRetry.isGone = true
+            binding.tvError.isGone = true
+            showInitialLoading()
+            viewModel.onEvent(ComicsListEvent.OnGetComics)
+        }
     }
 
     private fun showInitialLoading() {
@@ -163,10 +169,12 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
                 hideInitialLoading()
                 binding.rvComics.isGone = true
                 binding.tvError.isGone = false
+                binding.btnRetry.isGone = false
             }
             is ComicsListState.ShowSearchComics -> {
                 binding.rvComics.isGone = false
                 binding.tvError.isGone = true
+                binding.btnRetry.isGone = true
                 val size = comicAdapter.items.size
                 comicAdapter.items.clear()
                 comicAdapter.notifyItemRangeRemoved(0, size)
@@ -179,6 +187,8 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
             is ComicsListState.ShowPlaceholderError -> {
                 hideInitialLoading()
                 binding.rvComics.isGone = true
+                binding.tvError.isGone = false
+                binding.btnRetry.isGone = false
                 binding.tvError.text = comicState.errorMessage
             }
         }
@@ -208,6 +218,7 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
             }
 
             override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
+                binding.btnRetry.isGone = true
                 binding.tvError.isGone = true
                 isSearching = false
                 return true

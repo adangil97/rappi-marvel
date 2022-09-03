@@ -8,4 +8,5 @@
     <string name="hello_series_fragment">Hello series fragment</string>
     <string name="msg_empty">¡Nada que mostrar!</string>
     <string name="search">Buscar</string>
+    <string name="msg_retry">Reintentar</string>
 </resources>

@@ -115,6 +115,12 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
                 }
             }
         })
+        binding.btnRetry.setOnClickListener {
+            binding.btnRetry.isGone = true
+            binding.tvError.isGone = true
+            showInitialLoading()
+            viewModel.onEvent(SeriesListEvent.OnGetSeries)
+        }
     }
 
     private fun showInitialLoading() {
@@ -165,10 +171,12 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
                 hideInitialLoading()
                 binding.rvSeries.isGone = true
                 binding.tvError.isGone = false
+                binding.btnRetry.isGone = false
             }
             is SeriesListState.ShowSearchSeries -> {
                 binding.rvSeries.isGone = false
                 binding.tvError.isGone = true
+                binding.btnRetry.isGone = true
                 val size = seriesAdapter.items.size
                 seriesAdapter.items.clear()
                 seriesAdapter.notifyItemRangeRemoved(0, size)
@@ -181,6 +189,8 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
             is SeriesListState.ShowPlaceholderError -> {
                 hideInitialLoading()
                 binding.rvSeries.isGone = true
+                binding.tvError.isGone = false
+                binding.btnRetry.isGone = false
                 binding.tvError.text = seriesState.errorMessage
             }
         }
@@ -211,6 +221,7 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
 
             override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
                 binding.tvError.isGone = true
+                binding.btnRetry.isGone = true
                 isSearching = false
                 return true
             }
