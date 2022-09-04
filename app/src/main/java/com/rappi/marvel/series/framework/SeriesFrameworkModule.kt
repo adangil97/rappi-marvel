@@ -3,6 +3,7 @@ package com.rappi.marvel.series.framework
 import com.rappi.data.series.datasources.SeriesLocalDataSource
 import com.rappi.data.series.datasources.SeriesRemoteDataSource
 import com.rappi.data.series.repositories.SeriesRepository
+import com.rappi.marvel.database.CharacterDao
 import com.rappi.marvel.database.MarvelDatabase
 import com.rappi.marvel.database.SeriesDao
 import dagger.Module
@@ -48,8 +49,14 @@ object SeriesFrameworkModule {
      */
     @Provides
     @ViewModelScoped
-    fun providesSeriesLocalDataSource(seriesDao: SeriesDao): SeriesLocalDataSource =
-        SeriesPersistenceDataSource(seriesDao)
+    fun providesSeriesLocalDataSource(
+        seriesDao: SeriesDao,
+        characterDao: CharacterDao
+    ): SeriesLocalDataSource =
+        SeriesPersistenceDataSource(
+            seriesDao,
+            characterDao
+        )
 
     /**
      * Proporciona una instancia del repositorio de llamadas a flujos de series marvel.

@@ -11,7 +11,8 @@ import androidx.room.TypeConverters
  */
 @Database(
     entities = [
-        MarvelEntity::class
+        MarvelEntity::class,
+        CharacterEntity::class
     ],
     version = MarvelDatabase.DATABASE_VERSION
 )
@@ -25,4 +26,6 @@ abstract class MarvelDatabase : RoomDatabase() {
     abstract fun comicsDao(): ComicsDao
 
     abstract fun seriesDao(): SeriesDao
+
+    abstract fun characterDao(): CharacterDao
 }

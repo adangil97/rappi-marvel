@@ -2,6 +2,7 @@ package com.rappi.marvel
 
 import android.content.Context
 import androidx.room.Room
+import com.rappi.marvel.database.CharacterDao
 import com.rappi.marvel.database.MarvelDatabase
 import dagger.Module
 import dagger.Provides
@@ -40,6 +41,11 @@ object MarvelModule {
             MarvelDatabase::class.java,
             MarvelDatabase.DATABASE_NAME
         ).fallbackToDestructiveMigration().build()
+
+    @Provides
+    @Singleton
+    fun providesCharacterDao(marvelDatabase: MarvelDatabase): CharacterDao =
+        marvelDatabase.characterDao()
 
     /**
      * Proporciona el cliente necesario en las capas internas para obtener datos desde la api de marvel.

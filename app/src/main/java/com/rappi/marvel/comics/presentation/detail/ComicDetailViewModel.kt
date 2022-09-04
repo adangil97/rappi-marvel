@@ -36,7 +36,7 @@ class ComicDetailViewModel @Inject constructor(
     private fun onGetComicById(id: Int) {
         viewModelScope.launch {
             val comic = getComicById(id)
-            mSideEffect.value = ComicDetailState.ShowComic(comic)
+            mSideEffect.value = ComicDetailState.ShowComic(comic.data)
         }
     }
 

@@ -1,6 +1,7 @@
 package com.rappi.marvel.comics.presentation.detail
 
 import com.rappi.data.comics.repositories.ComicsRepository
+import com.rappi.usecases.comics.GetCharactersByIdComic
 import com.rappi.usecases.comics.GetComicById
 import com.rappi.usecases.comics.GetComicDescription
 import dagger.Module
@@ -25,11 +26,13 @@ object ComicDetailModule {
     @ViewModelScoped
     fun providesGetComicById(
         comicsRepository: ComicsRepository,
-        getComicDescription: GetComicDescription
+        getComicDescription: GetComicDescription,
+        getCharactersByIdComic: GetCharactersByIdComic
     ): GetComicById =
         GetComicById(
             comicsRepository,
-            getComicDescription
+            getComicDescription,
+            getCharactersByIdComic
         )
 
     /**
@@ -39,4 +42,12 @@ object ComicDetailModule {
     @ViewModelScoped
     fun providesGetComicDescription(comicsRepository: ComicsRepository): GetComicDescription =
         GetComicDescription(comicsRepository)
+
+    /**
+     * Proporciona el caso de uso de obtención de personajes por id de comic.
+     */
+    @Provides
+    @ViewModelScoped
+    fun providesGetCharactersByIdComic(comicsRepository: ComicsRepository): GetCharactersByIdComic =
+        GetCharactersByIdComic(comicsRepository)
 }

@@ -1,7 +1,9 @@
 package com.rappi.marvel.utils
 
+import com.rappi.domain.characters.dto.CharacterDto
 import com.rappi.domain.comics.dto.ComicDto
 import com.rappi.domain.series.dto.SerieDto
+import com.rappi.marvel.database.CharacterEntity
 import com.rappi.marvel.database.MarvelEntity
 import com.rappi.marvel.database.MarvelType
 
@@ -55,6 +57,22 @@ fun ComicDto.toMarvelEntity(): MarvelEntity =
         time = time,
         lastUpdate = lastUpdate,
         urlDescription = urlDescription
+    )
+
+fun CharacterEntity.toCharacterDto(): CharacterDto =
+    CharacterDto(
+        id = id,
+        name = name,
+        urlImage = urlImage,
+        connectionId = connectionId
+    )
+
+fun CharacterDto.toCharacterEntity(): CharacterEntity =
+    CharacterEntity(
+        id = id,
+        name = name,
+        urlImage = urlImage,
+        connectionId = connectionId
     )
 
 fun Int.toHexColor(): String =

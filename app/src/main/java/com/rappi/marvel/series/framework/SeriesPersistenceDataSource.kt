@@ -1,8 +1,12 @@
 package com.rappi.marvel.series.framework
 
 import com.rappi.data.series.datasources.SeriesLocalDataSource
+import com.rappi.domain.characters.dto.CharacterDto
 import com.rappi.domain.series.dto.SerieDto
+import com.rappi.marvel.database.CharacterDao
 import com.rappi.marvel.database.SeriesDao
+import com.rappi.marvel.utils.toCharacterDto
+import com.rappi.marvel.utils.toCharacterEntity
 import com.rappi.marvel.utils.toMarvelEntity
 import com.rappi.marvel.utils.toSerieDto
 import kotlinx.coroutines.flow.Flow
@@ -16,7 +20,8 @@ import kotlinx.coroutines.flow.map
  * @author Adán Castillo.
  */
 class SeriesPersistenceDataSource(
-    private val seriesDao: SeriesDao
+    private val seriesDao: SeriesDao,
+    private val characterDao: CharacterDao
 ) : SeriesLocalDataSource {
 
     override fun getSeries(offset: Int, limit: Int): Flow<List<SerieDto>> =
@@ -45,4 +50,16 @@ class SeriesPersistenceDataSource(
 
     override suspend fun getSerieById(id: Int): SerieDto =
         seriesDao.getSerieById(id).toSerieDto()
+
+    override suspend fun getCharactersByIdSerie(id: Int): List<CharacterDto> =
+        characterDao.getCharactersByIdConnection(id).map {
+            it.toCharacterDto()
+        }
+
+    override suspend fun insertCharacters(characters: List<CharacterDto>) =
+        characterDao.insertCharacters(
+            characters.map {
+                it.toCharacterEntity()
+            }
+        )
 }

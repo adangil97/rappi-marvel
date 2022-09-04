@@ -1,5 +1,7 @@
 package com.rappi.data.utils
 
+import com.rappi.domain.characters.dto.CharacterDto
+import com.rappi.domain.characters.remote.Character
 import com.rappi.domain.comics.dto.ComicDto
 import com.rappi.domain.comics.remote.Comic
 import com.rappi.domain.series.dto.SerieDto
@@ -39,6 +41,14 @@ fun Series.toSerieDto(lastUpdate: Long): SerieDto =
         }?.url,
         time = modified.parseToDateMillis(),
         lastUpdate = lastUpdate
+    )
+
+fun Character.toCharacterDto(connectionId: Int): CharacterDto =
+    CharacterDto(
+        id = id,
+        name = name,
+        urlImage = "${thumbnail.path}.${thumbnail.extension}",
+        connectionId = connectionId
     )
 
 fun String.toMD5(): String {

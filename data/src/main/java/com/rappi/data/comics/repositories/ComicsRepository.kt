@@ -5,6 +5,7 @@ import com.rappi.data.comics.datasources.ComicsLocalDataSource
 import com.rappi.data.comics.datasources.ComicsRemoteDataSource
 import com.rappi.data.utils.Resource
 import com.rappi.data.utils.networkBoundResource
+import com.rappi.domain.characters.dto.CharacterDto
 import com.rappi.domain.comics.dto.ComicsWrapper
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -71,5 +72,18 @@ class ComicsRepository(
      *
      * @param urlDescription [String] url de la descripción del comic.
      */
-    fun getHtmlDescription(urlDescription: String): String? = comicsRemoteDataSource.getHtmlDescription(urlDescription)
+    fun getHtmlDescription(urlDescription: String): String? =
+        comicsRemoteDataSource.getHtmlDescription(urlDescription)
+
+    /**
+     * Obtiene un listado de personajes desde la base de datos local, si no lo busca en el servicio.
+     *
+     * @param idComic [Int] identificador de la serie.
+     */
+    suspend fun getCharactersByIdComic(idComic: Int): List<CharacterDto> =
+        comicsLocalDataSource.getCharactersByIdComic(idComic).ifEmpty {
+            val characters = comicsRemoteDataSource.getCharactersByIdComic(idComic)
+            comicsLocalDataSource.insertCharacters(characters)
+            characters
+        }
 }

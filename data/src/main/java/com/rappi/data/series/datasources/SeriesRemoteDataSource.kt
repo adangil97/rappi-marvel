@@ -1,9 +1,12 @@
 package com.rappi.data.series.datasources
 
 import com.rappi.data.DataConstants
+import com.rappi.data.utils.toCharacterDto
 import com.rappi.data.utils.toMD5
 import com.rappi.data.utils.toSerieDto
 import com.rappi.domain.ResponseDataWrapper
+import com.rappi.domain.characters.dto.CharacterDto
+import com.rappi.domain.characters.remote.Character
 import com.rappi.domain.series.dto.SerieDto
 import com.rappi.domain.series.remote.Series
 import io.ktor.client.*
@@ -57,6 +60,34 @@ abstract class SeriesRemoteDataSource(
         }
     }
 
+    /**
+     * Permite obtener el listado de personajes desde el servicio.
+     *
+     * @param idComic [Int] id del comic.
+     */
+    suspend fun getCharactersByIdSerie(idComic: Int): List<CharacterDto> {
+        val response: ResponseDataWrapper<Character> = client.get("series/$idComic/characters") {
+            val currentTime = System.currentTimeMillis()
+            // Se crea un hash MD5(MarcaDeTiempo+privateKey+publicKey)
+            val strHash = "$currentTime${DataConstants.PRIVATE_KEY}${DataConstants.PUBLIC_KEY}"
+            val hash = strHash.toMD5()
+            parameter("ts", currentTime)
+            parameter("apikey", DataConstants.PUBLIC_KEY)
+            parameter(
+                "hash",
+                hash
+            )
+        }.body()
+        return response.data.results.map {
+            it.toCharacterDto(idComic)
+        }
+    }
+
+    /**
+     * Permite obtener la descripción de un comic con el uso de web scraping.
+     *
+     * @param urlDescription [String] url donde se encuentra el html con la descripción.
+     */
     fun getHtmlDescription(urlDescription: String): String? {
         val html =
             Jsoup.connect(urlDescription)

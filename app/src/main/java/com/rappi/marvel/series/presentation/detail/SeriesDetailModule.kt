@@ -1,6 +1,7 @@
 package com.rappi.marvel.series.presentation.detail
 
 import com.rappi.data.series.repositories.SeriesRepository
+import com.rappi.usecases.series.GetCharactersByIdSerie
 import com.rappi.usecases.series.GetSerieById
 import com.rappi.usecases.series.GetSerieDescription
 import dagger.Module
@@ -25,15 +26,28 @@ object SeriesDetailModule {
     @ViewModelScoped
     fun providesGetSerieById(
         seriesRepository: SeriesRepository,
-        getSerieDescription: GetSerieDescription
+        getSerieDescription: GetSerieDescription,
+        getCharactersByIdSerie: GetCharactersByIdSerie
     ): GetSerieById =
         GetSerieById(
             seriesRepository,
-            getSerieDescription
+            getSerieDescription,
+            getCharactersByIdSerie
         )
 
+    /**
+     * Proporciona el cas de uso de obtención de descripción de la serie.
+     */
     @Provides
     @ViewModelScoped
     fun providesGetSerieDescription(seriesRepository: SeriesRepository): GetSerieDescription =
         GetSerieDescription(seriesRepository)
+
+    /**
+     * Proporciona el caso de uso de obtención de personajes por id de serie.
+     */
+    @Provides
+    @ViewModelScoped
+    fun providesGetCharactersByIdSerie(seriesRepository: SeriesRepository): GetCharactersByIdSerie =
+        GetCharactersByIdSerie(seriesRepository)
 }

@@ -1,5 +1,6 @@
 package com.rappi.data.series.datasources
 
+import com.rappi.domain.characters.dto.CharacterDto
 import com.rappi.domain.series.dto.SerieDto
 import kotlinx.coroutines.flow.Flow
 
@@ -43,4 +44,18 @@ interface SeriesLocalDataSource {
      * @param id [Int] id de la serie e obtener
      */
     suspend fun getSerieById(id: Int): SerieDto
+
+    /**
+     * Obtiene un listado de personajes por id de serie.
+     *
+     * @param id [Int] id de la serie.
+     */
+    suspend fun getCharactersByIdSerie(id: Int): List<CharacterDto>
+
+    /**
+     * Permite insertar un listado de personajes por serie.
+     *
+     * @param characters [List] es el listado de personajes por serie
+     */
+    suspend fun insertCharacters(characters: List<CharacterDto>)
 }

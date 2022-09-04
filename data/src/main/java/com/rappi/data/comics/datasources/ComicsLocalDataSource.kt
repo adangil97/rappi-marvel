@@ -1,5 +1,6 @@
 package com.rappi.data.comics.datasources
 
+import com.rappi.domain.characters.dto.CharacterDto
 import com.rappi.domain.comics.dto.ComicDto
 import kotlinx.coroutines.flow.Flow
 
@@ -43,4 +44,18 @@ interface ComicsLocalDataSource {
      * @param id [Int] identificador del comic a obtener.
      */
     suspend fun getComicById(id: Int): ComicDto
+
+    /**
+     * Obtiene un listado de personajes por id de comic.
+     *
+     * @param id [Int] id del comic.
+     */
+    suspend fun getCharactersByIdComic(id: Int): List<CharacterDto>
+
+    /**
+     * Permite insertar un listado de personajes por serie.
+     *
+     * @param characters [List] es el listado de personajes por serie
+     */
+    suspend fun insertCharacters(characters: List<CharacterDto>)
 }

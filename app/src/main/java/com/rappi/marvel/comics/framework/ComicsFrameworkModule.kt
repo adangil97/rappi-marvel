@@ -3,6 +3,7 @@ package com.rappi.marvel.comics.framework
 import com.rappi.data.comics.datasources.ComicsLocalDataSource
 import com.rappi.data.comics.datasources.ComicsRemoteDataSource
 import com.rappi.data.comics.repositories.ComicsRepository
+import com.rappi.marvel.database.CharacterDao
 import com.rappi.marvel.database.ComicsDao
 import com.rappi.marvel.database.MarvelDatabase
 import dagger.Module
@@ -48,8 +49,11 @@ object ComicsFrameworkModule {
      */
     @Provides
     @ViewModelScoped
-    fun providesComicsLocalDataSource(comicsDao: ComicsDao): ComicsLocalDataSource =
-        ComicsPersistenceDataSource(comicsDao)
+    fun providesComicsLocalDataSource(
+        comicsDao: ComicsDao,
+        characterDao: CharacterDao
+    ): ComicsLocalDataSource =
+        ComicsPersistenceDataSource(comicsDao, characterDao)
 
     /**
      * Proporciona una instancia del repositorio de llamadas a flujos de comics marvel.
