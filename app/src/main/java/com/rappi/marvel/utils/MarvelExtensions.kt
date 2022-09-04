@@ -18,18 +18,20 @@ fun MarvelEntity.toSerieDto(): SerieDto =
         description = description,
         urlImage = urlImage,
         time = time,
-        lastUpdate = lastUpdate
+        lastUpdate = lastUpdate,
+        urlDescription = urlDescription
     )
 
 fun SerieDto.toMarvelEntity(): MarvelEntity =
     MarvelEntity(
         id = id,
         title = title,
-        description = description,
+        description = description ?: "",
         urlImage = urlImage,
         type = MarvelType.SERIES,
         time = time,
-        lastUpdate = lastUpdate
+        lastUpdate = lastUpdate,
+        urlDescription = urlDescription
     )
 
 fun MarvelEntity.toComicDto(): ComicDto =
@@ -39,18 +41,20 @@ fun MarvelEntity.toComicDto(): ComicDto =
         description = description,
         urlImage = urlImage,
         time = time,
-        lastUpdate = lastUpdate
+        lastUpdate = lastUpdate,
+        urlDescription = urlDescription
     )
 
 fun ComicDto.toMarvelEntity(): MarvelEntity =
     MarvelEntity(
         id = id,
         title = title,
-        description = description,
+        description = description ?: "",
         urlImage = urlImage,
         type = MarvelType.COMICS,
         time = time,
-        lastUpdate = lastUpdate
+        lastUpdate = lastUpdate,
+        urlDescription = urlDescription
     )
 
 fun Int.toHexColor(): String =

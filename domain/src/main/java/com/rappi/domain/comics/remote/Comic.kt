@@ -1,5 +1,6 @@
 package com.rappi.domain.comics.remote
 
+import com.rappi.domain.Thumbnail
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -16,6 +17,7 @@ data class Comic(
     val modified: String,
     val pageCount: Int,
     val resourceURI: String,
+    val urls: List<Url>,
     val thumbnail: Thumbnail,
     val title: String,
     val upc: String,

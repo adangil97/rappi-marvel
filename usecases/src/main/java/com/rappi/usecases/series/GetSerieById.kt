@@ -10,10 +10,14 @@ import kotlinx.coroutines.withContext
  * @author Adán Castillo.
  */
 class GetSerieById(
-    private val seriesRepository: SeriesRepository
+    private val seriesRepository: SeriesRepository,
+    private val getSerieDescription: GetSerieDescription
 ) {
 
     suspend operator fun invoke(id: Int) = withContext(Dispatchers.IO) {
-        seriesRepository.getSerieById(id)
+        val serie = seriesRepository.getSerieById(id)
+        serie.copy(
+            description = serie.description ?: getSerieDescription(serie.urlDescription)
+        )
     }
 }

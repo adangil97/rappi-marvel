@@ -1,4 +1,4 @@
-package com.rappi.domain.series.remote
+package com.rappi.domain
 
 import kotlinx.serialization.Serializable
 

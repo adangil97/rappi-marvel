@@ -2,6 +2,7 @@ package com.rappi.marvel.series.presentation.detail
 
 import com.rappi.data.series.repositories.SeriesRepository
 import com.rappi.usecases.series.GetSerieById
+import com.rappi.usecases.series.GetSerieDescription
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -22,6 +23,17 @@ object SeriesDetailModule {
      */
     @Provides
     @ViewModelScoped
-    fun providesGetSerieById(seriesRepository: SeriesRepository): GetSerieById =
-        GetSerieById(seriesRepository)
+    fun providesGetSerieById(
+        seriesRepository: SeriesRepository,
+        getSerieDescription: GetSerieDescription
+    ): GetSerieById =
+        GetSerieById(
+            seriesRepository,
+            getSerieDescription
+        )
+
+    @Provides
+    @ViewModelScoped
+    fun providesGetSerieDescription(seriesRepository: SeriesRepository): GetSerieDescription =
+        GetSerieDescription(seriesRepository)
 }

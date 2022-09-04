@@ -8,8 +8,9 @@ package com.rappi.domain.comics.dto
 data class ComicDto(
     val id: Int,
     val title: String,
-    val description: String,
+    val description: String?,
     val urlImage: String,
+    val urlDescription: String?,
     val time: Long,
     val lastUpdate: Long
 )

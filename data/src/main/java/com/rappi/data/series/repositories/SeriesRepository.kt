@@ -67,4 +67,11 @@ class SeriesRepository(
      * @param id [Int] identificador de la serie.
      */
     suspend fun getSerieById(id: Int) = seriesLocalDataSource.getSerieById(id)
+
+    /**
+     * Obtiene la descripción de una serie a traves de web scrapping.
+     *
+     * @param urlDescription [String] url de la descripción de la serie.
+     */
+    fun getHtmlDescription(urlDescription: String): String? = seriesRemoteDataSource.getHtmlDescription(urlDescription)
 }

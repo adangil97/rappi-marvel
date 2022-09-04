@@ -19,8 +19,11 @@ fun Comic.toComicDto(lastUpdate: Long): ComicDto =
     ComicDto(
         id = id,
         title = title,
-        description = description ?: "",
+        description = description,
         urlImage = "${thumbnail.path}.${thumbnail.extension}",
+        urlDescription = urls.find {
+            it.type == "detail"
+        }?.url,
         time = modified.parseToDateMillis(),
         lastUpdate = lastUpdate
     )
@@ -29,8 +32,11 @@ fun Series.toSerieDto(lastUpdate: Long): SerieDto =
     SerieDto(
         id = id,
         title = title,
-        description = description ?: "",
+        description = description,
         urlImage = "${thumbnail.path}.${thumbnail.extension}",
+        urlDescription = urls.find {
+            it.type == "detail"
+        }?.url,
         time = modified.parseToDateMillis(),
         lastUpdate = lastUpdate
     )

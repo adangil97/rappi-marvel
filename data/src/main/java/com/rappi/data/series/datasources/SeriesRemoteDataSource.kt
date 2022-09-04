@@ -3,11 +3,13 @@ package com.rappi.data.series.datasources
 import com.rappi.data.DataConstants
 import com.rappi.data.utils.toMD5
 import com.rappi.data.utils.toSerieDto
+import com.rappi.domain.ResponseDataWrapper
 import com.rappi.domain.series.dto.SerieDto
-import com.rappi.domain.series.remote.SeriesDataWrapper
+import com.rappi.domain.series.remote.Series
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
+import org.jsoup.Jsoup
 
 /**
  * Contrato de definición de las llamadas remotas necesarias para series marvel.
@@ -26,7 +28,7 @@ abstract class SeriesRemoteDataSource(
      * @param offset [Int] es el desplazamiento a realizar.
      */
     suspend fun getSeries(offset: Int): List<SerieDto> {
-        val response: SeriesDataWrapper = client.get("series") {
+        val response: ResponseDataWrapper<Series> = client.get("series") {
             val currentTime = System.currentTimeMillis()
             // Se crea un hash MD5(MarcaDeTiempo+privateKey+publicKey)
             val strHash = "$currentTime${DataConstants.PRIVATE_KEY}${DataConstants.PUBLIC_KEY}"
@@ -53,5 +55,16 @@ abstract class SeriesRemoteDataSource(
             // Convierte las series obtenidas del servicio a un listado de series transferible a capas superiores.
             it.toSerieDto(lastUpdate)
         }
+    }
+
+    fun getHtmlDescription(urlDescription: String): String? {
+        val html =
+            Jsoup.connect(urlDescription)
+                .get()
+
+        val target = html
+            .body()
+            .getElementById("page-content")?.child(0)?.child(3)?.child(1)?.child(0)?.child(1)?.child(2)?.child(1)
+        return target?.text()
     }
 }

@@ -65,4 +65,11 @@ class ComicsRepository(
      * @param id [Int] identificador del comic.
      */
     suspend fun getComicById(id: Int) = comicsLocalDataSource.getComicById(id)
+
+    /**
+     * Obtiene la descripción de un comic a traves de web scrapping.
+     *
+     * @param urlDescription [String] url de la descripción del comic.
+     */
+    fun getHtmlDescription(urlDescription: String): String? = comicsRemoteDataSource.getHtmlDescription(urlDescription)
 }
