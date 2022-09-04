@@ -10,6 +10,7 @@
         <entry key="app/src/main/res/layout/adapter_item_loading_shimmer.xml" value="0.246875" />
         <entry key="app/src/main/res/layout/adapter_item_shimmer.xml" value="0.24791666666666667" />
         <entry key="app/src/main/res/layout/adapter_series_item.xml" value="0.24791666666666667" />
+        <entry key="app/src/main/res/layout/fragment_comic_list.xml" value="0.24791666666666667" />
         <entry key="app/src/main/res/layout/fragment_comics_detail.xml" value="0.24791666666666667" />
         <entry key="app/src/main/res/layout/fragment_series_detail.xml" value="0.24791666666666667" />
         <entry key="app/src/main/res/layout/fragment_series_list.xml" value="0.24791666666666667" />

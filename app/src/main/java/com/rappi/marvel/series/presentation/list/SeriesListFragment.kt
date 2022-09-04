@@ -16,6 +16,8 @@ import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.coroutineScope
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -24,6 +26,9 @@ import com.rappi.marvel.R
 import com.rappi.marvel.databinding.FragmentSeriesListBinding
 import com.rappi.marvel.utils.viewBindings
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 /**
  * Contiene la vista del listado de series marvel.
@@ -40,6 +45,7 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
     private lateinit var seriesAdapter: SeriesListAdapter
     private var isSearching = false
     private var isPaging = true
+    private var page = 0
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -48,8 +54,14 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
         showMenu()
         showInitialLoading()
+        lifecycleScope.launch {
+            // Obtiene los datos de paginación.
+            viewModel.pagingDataFlow.collectLatest {
+                takeActionOn(it)
+            }
+        }
         // Obtenemos la primera pagina.
-        viewModel.onEvent(SeriesListEvent.OnGetSeries)
+        viewModel.pagingEvent(page)
         viewModel.sideEffect.observe(viewLifecycleOwner) {
             it?.let { seriesState ->
                 takeActionOn(seriesState)
@@ -82,7 +94,7 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
                     if (totalItemCount > 0 && endHasBeenReached && !isSearching) {
                         if (!isPaging) {
                             isPaging = true
-                            viewModel.onEvent(SeriesListEvent.OnGetSeries)
+                            viewModel.pagingEvent(page)
                         }
                     }
                 }
@@ -90,28 +102,8 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
 
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
-                // Si el usuario llego al final de la lista.
                 if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
-                    val layoutManager = recyclerView.layoutManager as GridLayoutManager
-                    val itemCount = layoutManager.itemCount
-                    // Obtenemos el ultimo item de la lista
-                    val lastItemType = seriesAdapter.items[itemCount - 1]
-                    // Si no es de tipo loading.
-                    if (lastItemType !is SeriesAdapterItemType.SerieLoadingType) {
-                        // Obtenemos cuantos items quedaron en la ultima fila.
-                        val lastItemsCount = itemCount % SPAN_COUNT
-                        // Obtenemos cuantos items faltan para llenar la fila.
-                        val countItems = SPAN_COUNT - lastItemsCount
-                        // Llenamos la fila con items de tipo loading para indicar operación en curso.
-                        val loadingItemList = IntArray(countItems).map {
-                            SeriesAdapterItemType.SerieLoadingType
-                        }
-                        seriesAdapter.items.addAll(loadingItemList)
-                        seriesAdapter.notifyItemRangeInserted(
-                            seriesAdapter.items.size,
-                            countItems
-                        )
-                    }
+                    viewModel.pagingEvent(page)
                 }
             }
         })
@@ -119,7 +111,8 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
             binding.btnRetry.isGone = true
             binding.tvError.isGone = true
             showInitialLoading()
-            viewModel.onEvent(SeriesListEvent.OnGetSeries)
+            page = 0
+            viewModel.pagingEvent(page)
         }
     }
 
@@ -138,6 +131,7 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
     private fun takeActionOn(seriesState: SeriesListState) {
         when (seriesState) {
             is SeriesListState.ShowGenericError -> {
+                isPaging = false
                 val snack = Snackbar.make(
                     requireView(),
                     seriesState.errorMessage,
@@ -150,6 +144,7 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
                 hideInitialLoading()
             }
             is SeriesListState.ShowSeries -> {
+                page += 1
                 val loadingItems =
                     seriesAdapter.items.filterIsInstance<SeriesAdapterItemType.SerieLoadingType>()
                 seriesAdapter.items.removeAll(loadingItems)
@@ -168,6 +163,7 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
                 )
             }
             SeriesListState.ShowEmpty -> {
+                isPaging = false
                 hideInitialLoading()
                 binding.rvSeries.isGone = true
                 binding.tvError.isGone = false
@@ -187,11 +183,35 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
                 )
             }
             is SeriesListState.ShowPlaceholderError -> {
+                isPaging = false
                 hideInitialLoading()
                 binding.rvSeries.isGone = true
                 binding.tvError.isGone = false
                 binding.btnRetry.isGone = false
                 binding.tvError.text = seriesState.errorMessage
+            }
+            SeriesListState.ShowLoading -> {
+                // Obtenemos el ultimo item de la lista
+                val lastItemType = seriesAdapter.items.lastOrNull()
+                val itemCount = seriesAdapter.itemCount
+                lastItemType?.let { lastItem ->
+                    // Si no es de tipo loading.
+                    if (lastItem !is SeriesAdapterItemType.SerieLoadingType) {
+                        // Obtenemos cuantos items quedaron en la ultima fila.
+                        val lastItemsCount = itemCount % SPAN_COUNT
+                        // Obtenemos cuantos items faltan para llenar la fila.
+                        val countItems = SPAN_COUNT - lastItemsCount
+                        // Llenamos la fila con items de tipo loading para indicar operación en curso.
+                        val loadingItemList = IntArray(countItems).map {
+                            SeriesAdapterItemType.SerieLoadingType
+                        }
+                        seriesAdapter.items.addAll(loadingItemList)
+                        seriesAdapter.notifyItemRangeInserted(
+                            seriesAdapter.items.size,
+                            countItems
+                        )
+                    }
+                }
             }
         }
     }
@@ -233,6 +253,8 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
     }
 
     override fun onDestroyView() {
+        lifecycle.coroutineScope.cancel()
+        page = 0
         isPaging = true
         viewModel.onEvent(SeriesListEvent.OnClearSideEffect)
         super.onDestroyView()

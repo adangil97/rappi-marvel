@@ -15,22 +15,24 @@ import java.util.Locale
  * @author Adán Castillo.
  */
 
-fun Comic.toComicDto(): ComicDto =
+fun Comic.toComicDto(lastUpdate: Long): ComicDto =
     ComicDto(
         id = id,
         title = title,
         description = description ?: "",
         urlImage = "${thumbnail.path}.${thumbnail.extension}",
-        time = modified.parseToDateMillis()
+        time = modified.parseToDateMillis(),
+        lastUpdate = lastUpdate
     )
 
-fun Series.toSerieDto(): SerieDto =
+fun Series.toSerieDto(lastUpdate: Long): SerieDto =
     SerieDto(
         id = id,
         title = title,
         description = description ?: "",
         urlImage = "${thumbnail.path}.${thumbnail.extension}",
-        time = modified.parseToDateMillis()
+        time = modified.parseToDateMillis(),
+        lastUpdate = lastUpdate
     )
 
 fun String.toMD5(): String {

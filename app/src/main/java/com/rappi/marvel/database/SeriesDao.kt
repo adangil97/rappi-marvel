@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 
 /**
  * Contiene las llamadas a las tablas de la base de datos para entidades de tipo serie.
@@ -17,11 +18,11 @@ interface SeriesDao {
     suspend fun insert(series: List<MarvelEntity>)
 
     @Query("SELECT * FROM MarvelEntity WHERE type = :type ORDER BY time DESC LIMIT :limit OFFSET :offset")
-    suspend fun getSeries(
+    fun getSeries(
         offset: Int,
         limit: Int,
         type: MarvelType = MarvelType.SERIES
-    ): List<MarvelEntity>
+    ): Flow<List<MarvelEntity>>
 
     @Query("SELECT * FROM MarvelEntity WHERE type = :type ORDER BY time DESC")
     suspend fun getAllSeries(

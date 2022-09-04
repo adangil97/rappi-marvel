@@ -5,10 +5,11 @@ package com.rappi.domain.series.dto
  *
  * @author Adán Castillo.
  */
-open class SerieDto(
-    open val id: Int,
-    open val title: String,
-    open val description: String,
-    open val urlImage: String,
-    open val time: Long
+data class SerieDto(
+    val id: Int,
+    val title: String,
+    val description: String,
+    val urlImage: String,
+    val time: Long,
+    val lastUpdate: Long
 )

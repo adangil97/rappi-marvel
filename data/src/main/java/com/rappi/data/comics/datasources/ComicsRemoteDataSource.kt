@@ -47,9 +47,10 @@ abstract class ComicsRemoteDataSource(
                 DataConstants.PAGE_SIZE
             )
         }.body()
+        val lastUpdate = System.currentTimeMillis()
         return response.data.results.map {
             // Convierte los comics obtenidas del servicio a un listado de comics transferible a capas superiores.
-            it.toComicDto()
+            it.toComicDto(lastUpdate)
         }
     }
 }

@@ -16,5 +16,6 @@ data class MarvelEntity(
     val description: String,
     val urlImage: String,
     val type: MarvelType,
-    val time: Long
+    val time: Long,
+    val lastUpdate: Long
 )

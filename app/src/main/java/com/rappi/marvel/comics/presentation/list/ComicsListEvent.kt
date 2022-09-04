@@ -7,8 +7,6 @@ package com.rappi.marvel.comics.presentation.list
  */
 sealed class ComicsListEvent {
 
-    object OnGetComics : ComicsListEvent()
-
     data class OnSearchComics(
         val query: String
     ) : ComicsListEvent()

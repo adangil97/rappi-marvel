@@ -4,10 +4,18 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rappi.data.utils.Resource
 import com.rappi.usecases.comics.GetAllComics
 import com.rappi.usecases.comics.GetComics
 import com.rappi.usecases.comics.SearchComics
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -17,6 +25,7 @@ import javax.inject.Inject
  * @author Adán Castillo.
  */
 @HiltViewModel
+@OptIn(ExperimentalCoroutinesApi::class)
 class ComicsListViewModel @Inject constructor(
     private val getComics: GetComics,
     private val searchComics: SearchComics,
@@ -25,13 +34,57 @@ class ComicsListViewModel @Inject constructor(
     private val mSideEffect = MutableLiveData<ComicsListState?>()
     val sideEffect: LiveData<ComicsListState?> get() = mSideEffect
 
-    private var page = 0
+    val pagingEvent: (Int) -> Unit
+    val pagingDataFlow: Flow<ComicsListState>
+
+    init {
+        val actionStateFlow = MutableSharedFlow<Int>()
+        val filteredScrolled = actionStateFlow
+            .shareIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000),
+                replay = 1
+            )
+
+        pagingDataFlow = filteredScrolled
+            .flatMapLatest { page ->
+                getComics(page)
+            }.map { resource ->
+                when (resource) {
+                    is Resource.Loading -> {
+                        ComicsListState.ShowLoading
+                    }
+                    is Resource.Success -> {
+                        ComicsListState.ShowComics(
+                            resource.data.comics.map {
+                                ComicsAdapterItemType.ComicDtoType(it)
+                            }
+                        )
+                    }
+                    is Resource.Error -> {
+                        if (resource.data.page == 0) {
+                            ComicsListState.ShowPlaceholderError(
+                                resource.throwable.localizedMessage ?: resource.throwable.message
+                                ?: "Unknown Error"
+                            )
+                        } else {
+                            ComicsListState.ShowGenericError(
+                                resource.throwable.localizedMessage ?: resource.throwable.message
+                                ?: "Unknown Error"
+                            )
+                        }
+                    }
+                }
+            }
+
+        pagingEvent = { action ->
+            viewModelScope.launch { actionStateFlow.emit(action) }
+        }
+    }
 
     fun onEvent(event: ComicsListEvent) {
         when (event) {
-            ComicsListEvent.OnGetComics -> onGetComics()
             ComicsListEvent.OnClearSideEffect -> {
-                page = 0
                 mSideEffect.value = null
             }
             is ComicsListEvent.OnSearchComics -> {
@@ -69,35 +122,6 @@ class ComicsListViewModel @Inject constructor(
                 )
             else
                 mSideEffect.value = ComicsListState.ShowEmpty
-        }
-    }
-
-    private fun onGetComics() {
-        viewModelScope.launch {
-            try {
-                // Obtenemos 3 paginas por llamada.
-                val comics = getComics(page)
-                if (comics.isEmpty() && page == 0)
-                    mSideEffect.value = ComicsListState.ShowEmpty
-                else {
-                    page += 1
-                    mSideEffect.value = ComicsListState.ShowComics(
-                        comics.map {
-                            ComicsAdapterItemType.ComicDtoType(it)
-                        }
-                    )
-                }
-            } catch (exception: Exception) {
-                exception.printStackTrace()
-                if (page == 0)
-                    mSideEffect.value = ComicsListState.ShowPlaceholderError(
-                        exception.localizedMessage ?: exception.message ?: "Unknown Error"
-                    )
-                else
-                    mSideEffect.value = ComicsListState.ShowGenericError(
-                        exception.localizedMessage ?: exception.message ?: "Unknown Error"
-                    )
-            }
         }
     }
 }

@@ -5,6 +5,8 @@ import com.rappi.domain.comics.dto.ComicDto
 import com.rappi.marvel.database.ComicsDao
 import com.rappi.marvel.utils.toComicDto
 import com.rappi.marvel.utils.toMarvelEntity
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 /**
  * Es la implementación del contrato de Comics locales.
@@ -17,9 +19,11 @@ class ComicsPersistenceDataSource(
     private val comicsDao: ComicsDao
 ) : ComicsLocalDataSource {
 
-    override suspend fun getComics(offset: Int, limit: Int): List<ComicDto> =
+    override fun getComics(offset: Int, limit: Int): Flow<List<ComicDto>> =
         comicsDao.getComics(offset, limit).map {
-            it.toComicDto()
+            it.map { marvelEntity ->
+                marvelEntity.toComicDto()
+            }
         }
 
     override suspend fun getAllComics(): List<ComicDto> =

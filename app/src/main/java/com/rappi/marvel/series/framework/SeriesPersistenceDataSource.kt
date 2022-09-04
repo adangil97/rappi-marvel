@@ -5,6 +5,8 @@ import com.rappi.domain.series.dto.SerieDto
 import com.rappi.marvel.database.SeriesDao
 import com.rappi.marvel.utils.toMarvelEntity
 import com.rappi.marvel.utils.toSerieDto
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 /**
  * Es la implementación del contrato de Series locales.
@@ -17,9 +19,11 @@ class SeriesPersistenceDataSource(
     private val seriesDao: SeriesDao
 ) : SeriesLocalDataSource {
 
-    override suspend fun getSeries(offset: Int, limit: Int): List<SerieDto> =
+    override fun getSeries(offset: Int, limit: Int): Flow<List<SerieDto>> =
         seriesDao.getSeries(offset, limit).map {
-            it.toSerieDto()
+            it.map { marvelEntity ->
+                marvelEntity.toSerieDto()
+            }
         }
 
     override suspend fun getAllSeries(): List<SerieDto> =

@@ -24,4 +24,6 @@ sealed class SeriesListState {
     data class ShowPlaceholderError(
         val errorMessage: String
     ) : SeriesListState()
+
+    object ShowLoading : SeriesListState()
 }

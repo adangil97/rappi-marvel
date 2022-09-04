@@ -16,6 +16,7 @@ import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -24,6 +25,8 @@ import com.rappi.marvel.R
 import com.rappi.marvel.databinding.FragmentComicListBinding
 import com.rappi.marvel.utils.viewBindings
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 /**
  * Contiene la vista del listado de comics marvel.
@@ -40,6 +43,7 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
     private lateinit var comicAdapter: ComicListAdapter
     private var isSearching = false
     private var isPaging = true
+    private var page = 0
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -48,8 +52,14 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
         showMenu()
         showInitialLoading()
+        lifecycleScope.launch {
+            // Obtiene los datos de paginación.
+            viewModel.pagingDataFlow.collectLatest {
+                takeActionOn(it)
+            }
+        }
         // Obtenemos la primera pagina.
-        viewModel.onEvent(ComicsListEvent.OnGetComics)
+        viewModel.pagingEvent(page)
         viewModel.sideEffect.observe(viewLifecycleOwner) {
             it?.let { comicState ->
                 takeActionOn(comicState)
@@ -80,7 +90,7 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
                     if (totalItemCount > 0 && endHasBeenReached && !isSearching) {
                         if (!isPaging) {
                             isPaging = true
-                            viewModel.onEvent(ComicsListEvent.OnGetComics)
+                            viewModel.pagingEvent(page)
                         }
                     }
                 }
@@ -88,28 +98,8 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
 
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
-                // Si el usuario llego al final de la lista.
                 if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
-                    val layoutManager = recyclerView.layoutManager as GridLayoutManager
-                    val itemCount = layoutManager.itemCount
-                    // Obtenemos el ultimo item de la lista
-                    val lastItemType = comicAdapter.items[itemCount - 1]
-                    // Si no es de tipo loading.
-                    if (lastItemType !is ComicsAdapterItemType.ComicLoadingType) {
-                        // Obtenemos cuantos items quedaron en la ultima fila.
-                        val lastItemsCount = itemCount % SPAN_COUNT
-                        // Obtenemos cuantos items faltan para llenar la fila.
-                        val countItems = SPAN_COUNT - lastItemsCount
-                        // Llenamos la fila con items de tipo loading para indicar operación en curso.
-                        val loadingItemList = IntArray(countItems).map {
-                            ComicsAdapterItemType.ComicLoadingType
-                        }
-                        comicAdapter.items.addAll(loadingItemList)
-                        comicAdapter.notifyItemRangeInserted(
-                            comicAdapter.items.size,
-                            countItems
-                        )
-                    }
+                    viewModel.pagingEvent(page)
                 }
             }
         })
@@ -117,7 +107,8 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
             binding.btnRetry.isGone = true
             binding.tvError.isGone = true
             showInitialLoading()
-            viewModel.onEvent(ComicsListEvent.OnGetComics)
+            page = 0
+            viewModel.pagingEvent(page)
         }
     }
 
@@ -148,6 +139,7 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
                 hideInitialLoading()
             }
             is ComicsListState.ShowComics -> {
+                page += 1
                 val loadingItems =
                     comicAdapter.items.filterIsInstance<ComicsAdapterItemType.ComicLoadingType>()
                 comicAdapter.items.removeAll(loadingItems)
@@ -191,6 +183,29 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
                 binding.btnRetry.isGone = false
                 binding.tvError.text = comicState.errorMessage
             }
+            ComicsListState.ShowLoading -> {
+                // Obtenemos el ultimo item de la lista
+                val lastItemType = comicAdapter.items.lastOrNull()
+                val itemCount = comicAdapter.itemCount
+                lastItemType?.let { lastItem ->
+                    // Si no es de tipo loading.
+                    if (lastItem !is ComicsAdapterItemType.ComicLoadingType) {
+                        // Obtenemos cuantos items quedaron en la ultima fila.
+                        val lastItemsCount = itemCount % SPAN_COUNT
+                        // Obtenemos cuantos items faltan para llenar la fila.
+                        val countItems = SPAN_COUNT - lastItemsCount
+                        // Llenamos la fila con items de tipo loading para indicar operación en curso.
+                        val loadingItemList = IntArray(countItems).map {
+                            ComicsAdapterItemType.ComicLoadingType
+                        }
+                        comicAdapter.items.addAll(loadingItemList)
+                        comicAdapter.notifyItemRangeInserted(
+                            comicAdapter.items.size,
+                            countItems
+                        )
+                    }
+                }
+            }
         }
     }
 
@@ -231,6 +246,7 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
     }
 
     override fun onDestroyView() {
+        page = 0
         isPaging = true
         viewModel.onEvent(ComicsListEvent.OnClearSideEffect)
         super.onDestroyView()

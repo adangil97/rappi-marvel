@@ -1,6 +1,7 @@
 package com.rappi.data.series.datasources
 
 import com.rappi.domain.series.dto.SerieDto
+import kotlinx.coroutines.flow.Flow
 
 /**
  * Contrato de definición de las llamadas locales necesarias para series marvel.
@@ -15,7 +16,7 @@ interface SeriesLocalDataSource {
      * @param offset [Int] desplazamiento a realizar.
      * @param limit [Int] cantidad de elementos a obtener.
      */
-    suspend fun getSeries(offset: Int, limit: Int): List<SerieDto>
+    fun getSeries(offset: Int, limit: Int): Flow<List<SerieDto>>
 
     /**
      * Obtiene todas las series disponibles en local.

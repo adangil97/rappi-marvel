@@ -48,9 +48,10 @@ abstract class SeriesRemoteDataSource(
                 DataConstants.PAGE_SIZE
             )
         }.body()
+        val lastUpdate = System.currentTimeMillis()
         return response.data.results.map {
             // Convierte las series obtenidas del servicio a un listado de series transferible a capas superiores.
-            it.toSerieDto()
+            it.toSerieDto(lastUpdate)
         }
     }
 }

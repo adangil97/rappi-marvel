@@ -3,7 +3,11 @@ package com.rappi.data.comics.repositories
 import com.rappi.data.DataConstants
 import com.rappi.data.comics.datasources.ComicsLocalDataSource
 import com.rappi.data.comics.datasources.ComicsRemoteDataSource
-import com.rappi.domain.comics.dto.ComicDto
+import com.rappi.data.utils.Resource
+import com.rappi.data.utils.networkBoundResource
+import com.rappi.domain.comics.dto.ComicsWrapper
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 /**
  * @author Adán Castillo.
@@ -16,7 +20,7 @@ class ComicsRepository(
     /**
      * Obtiene un listado de comics paginados.
      */
-    suspend fun getComics(page: Int): List<ComicDto> {
+    suspend fun getComics(page: Int): Flow<Resource<ComicsWrapper>> {
         /*
             Obtenemos mediante la pagina el desplazamiento que interpreta la api.
             Por ejemplo
@@ -27,12 +31,20 @@ class ComicsRepository(
             Así las capas superiores ya solo deben entregar una pagina incrementable.
         */
         val offset = page * DataConstants.PAGE_SIZE
-        // Obtenemos los comics de la api.
-        val remoteComics = comicsRemoteDataSource.getComics(offset)
-        // Los integramos en la base de datos local.
-        comicsLocalDataSource.insertComics(remoteComics)
-        // Devolvemos el listado de comics locales.
-        return comicsLocalDataSource.getComics(offset, DataConstants.PAGE_SIZE)
+        return networkBoundResource(
+            query = {
+                comicsLocalDataSource.getComics(offset, DataConstants.PAGE_SIZE).map { comics ->
+                    ComicsWrapper(page, comics)
+                }
+            },
+            fetch = { comicsRemoteDataSource.getComics(offset) },
+            saveFetchResult = { items -> comicsLocalDataSource.insertComics(items) },
+            shouldFetch = { comicsWrapper ->
+                comicsWrapper.comics.lastOrNull()?.let { comic ->
+                    DataConstants.CACHED_TIME >= comic.lastUpdate
+                } ?: true
+            }
+        )
     }
 
     /**

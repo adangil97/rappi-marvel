@@ -1,6 +1,7 @@
 package com.rappi.data.comics.datasources
 
 import com.rappi.domain.comics.dto.ComicDto
+import kotlinx.coroutines.flow.Flow
 
 /**
  * Contrato de definición de las llamadas locales necesarias para comics marvel.
@@ -15,7 +16,7 @@ interface ComicsLocalDataSource {
      * @param offset [Int] desplazamiento a realizar.
      * @param limit [Int] cantidad de elementos a obtener.
      */
-    suspend fun getComics(offset: Int, limit: Int): List<ComicDto>
+    fun getComics(offset: Int, limit: Int): Flow<List<ComicDto>>
 
     /**
      * Obtiene todos los comics disponibles en local.

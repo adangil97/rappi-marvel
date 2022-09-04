@@ -3,7 +3,11 @@ package com.rappi.data.series.repositories
 import com.rappi.data.DataConstants
 import com.rappi.data.series.datasources.SeriesLocalDataSource
 import com.rappi.data.series.datasources.SeriesRemoteDataSource
-import com.rappi.domain.series.dto.SerieDto
+import com.rappi.data.utils.Resource
+import com.rappi.data.utils.networkBoundResource
+import com.rappi.domain.series.dto.SeriesWrapper
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 /**
  * Realiza las operaciones remotas y locales necesarias para series marvel.
@@ -18,7 +22,7 @@ class SeriesRepository(
     /**
      * Obtiene un listado de series paginado.
      */
-    suspend fun getSeries(pageNumber: Int): List<SerieDto> {
+    suspend fun getSeries(page: Int): Flow<Resource<SeriesWrapper>> {
         /*
             Obtenemos mediante la pagina el desplazamiento que interpreta la api.
             Por ejemplo
@@ -28,13 +32,21 @@ class SeriesRepository(
 
             Así las capas superiores ya solo deben entregar una pagina incrementable.
         */
-        val offset = pageNumber * DataConstants.PAGE_SIZE
-        // Obtenemos las series de la api.
-        val remoteSeries = seriesRemoteDataSource.getSeries(offset)
-        // Las integramos a la base de datos local.
-        seriesLocalDataSource.insertSeries(remoteSeries)
-        // Devolvemos el listado de las series locales.
-        return seriesLocalDataSource.getSeries(offset, DataConstants.PAGE_SIZE)
+        val offset = page * DataConstants.PAGE_SIZE
+        return networkBoundResource(
+            query = {
+                seriesLocalDataSource.getSeries(offset, DataConstants.PAGE_SIZE).map { series ->
+                    SeriesWrapper(page, series)
+                }
+            },
+            fetch = { seriesRemoteDataSource.getSeries(offset) },
+            saveFetchResult = { items -> seriesLocalDataSource.insertSeries(items) },
+            shouldFetch = { seriesWrapper ->
+                seriesWrapper.series.lastOrNull()?.let { serie ->
+                    DataConstants.CACHED_TIME >= serie.lastUpdate
+                } ?: true
+            }
+        )
     }
 
     /**
