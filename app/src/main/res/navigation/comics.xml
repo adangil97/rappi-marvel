@@ -11,11 +11,7 @@
         tools:layout="@layout/fragment_comic_list">
         <action
             android:id="@+id/action_comicListFragment_to_comicsDetailFragment"
-            app:destination="@id/comicsDetailFragment"
-            app:enterAnim="@anim/nav_default_pop_enter_anim"
-            app:exitAnim="@anim/nav_default_pop_exit_anim"
-            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+            app:destination="@id/comicsDetailFragment" />
     </fragment>
     <fragment
         android:id="@+id/comicsDetailFragment"
@@ -24,5 +20,8 @@
         <argument
             android:name="id"
             app:argType="integer" />
+        <argument
+            android:name="urlImage"
+            app:argType="string" />
     </fragment>
 </navigation>

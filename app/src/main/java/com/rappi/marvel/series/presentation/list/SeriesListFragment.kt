@@ -2,7 +2,6 @@ package com.rappi.marvel.series.presentation.list
 
 import android.os.Bundle
 import android.text.InputType
-import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -14,17 +13,20 @@ import androidx.appcompat.widget.SearchView.OnQueryTextListener
 import androidx.core.content.ContextCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.rappi.marvel.R
 import com.rappi.marvel.databinding.FragmentSeriesListBinding
+import com.rappi.marvel.utils.viewBindings
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -44,17 +46,7 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
     private var isSearching = false
     private var isPaging = true
     private var page = 0
-    private var mBinding: FragmentSeriesListBinding? = null
-    private val binding get() = requireNotNull(mBinding)
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        mBinding = FragmentSeriesListBinding.inflate(inflater, container, false)
-        return binding.root
-    }
+    private val binding: FragmentSeriesListBinding by viewBindings()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -63,28 +55,33 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
         showMenu()
         showInitialLoading()
-        lifecycleScope.launch {
+        postponeEnterTransition()
+
+        viewLifecycleOwner.lifecycleScope.launch {
             // Obtiene los datos de paginación.
             viewModel.pagingDataFlow.collectLatest {
                 // Solo actualizamos la vista cuando no sea nula
-                if (mBinding != null)
-                    takeActionOn(it)
+                takeActionOn(it)
             }
         }
         // Obtenemos la primera pagina.
-        viewModel.pagingEvent(page)
+        viewModel.pagingEvent(SeriesListFilter(page))
         viewModel.sideEffect.observe(viewLifecycleOwner) {
             it?.let { seriesState ->
                 takeActionOn(seriesState)
             }
         }
 
-        seriesAdapter = SeriesListAdapter(mutableListOf()) {
+        seriesAdapter = SeriesListAdapter(mutableListOf()) { serie, imageView ->
+            val extras = FragmentNavigatorExtras(
+                imageView to serie.urlImage
+            )
             val action =
                 SeriesListFragmentDirections.actionSeriesListFragmentToSeriesDetailFragment(
-                    it.id
+                    serie.id,
+                    serie.urlImage
                 )
-            findNavController().navigate(action)
+            findNavController().navigate(action, extras)
         }
         binding.rvSeries.apply {
             layoutManager = GridLayoutManager(requireContext(), SPAN_COUNT)
@@ -105,7 +102,7 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
                     if (totalItemCount > 0 && endHasBeenReached && !isSearching) {
                         if (!isPaging) {
                             isPaging = true
-                            viewModel.pagingEvent(page)
+                            viewModel.pagingEvent(SeriesListFilter(page))
                         }
                     }
                 }
@@ -114,8 +111,8 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
                 if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
-                    if (!isSearching)
-                        viewModel.pagingEvent(page)
+                    if (!isSearching && !isPaging)
+                        viewModel.pagingEvent(SeriesListFilter(page, requireMoreData = true))
                 }
             }
         })
@@ -124,7 +121,7 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
             binding.tvError.isGone = true
             showInitialLoading()
             page = 0
-            viewModel.pagingEvent(page)
+            viewModel.pagingEvent(SeriesListFilter(page))
         }
     }
 
@@ -173,6 +170,9 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
                     seriesAdapter.items.size,
                     seriesState.series.size
                 )
+                (requireView().parent as? ViewGroup)?.doOnPreDraw {
+                    startPostponedEnterTransition()
+                }
             }
             SeriesListState.ShowEmpty -> {
                 isPaging = false
@@ -265,7 +265,6 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
     }
 
     override fun onDestroyView() {
-        mBinding = null
         page = 0
         isPaging = true
         isSearching = false

@@ -17,4 +17,8 @@ sealed class ComicDetailState {
     data class ShowDominantColor(
         val hexDominantColor: String
     ) : ComicDetailState()
+
+    data class ShowErrorMessage(
+        val errorMessage: String
+    ) : ComicDetailState()
 }

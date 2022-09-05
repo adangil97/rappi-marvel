@@ -35,8 +35,15 @@ class SeriesDetailViewModel @Inject constructor(
 
     private fun onGetSerieById(id: Int) {
         viewModelScope.launch {
-            val serie = getSerieById(id)
-            mSideEffect.value = SeriesDetailState.ShowSerie(serie)
+            try {
+                val serie = getSerieById(id)
+                mSideEffect.value = SeriesDetailState.ShowSerie(serie)
+            } catch (exception: Exception) {
+                exception.printStackTrace()
+                mSideEffect.value = SeriesDetailState.ShowErrorMessage(
+                    exception.message ?: exception.localizedMessage ?: "Unknown Error"
+                )
+            }
         }
     }
 

@@ -13,6 +13,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
@@ -34,21 +35,24 @@ class ComicsListViewModel @Inject constructor(
     private val mSideEffect = MutableLiveData<ComicsListState?>()
     val sideEffect: LiveData<ComicsListState?> get() = mSideEffect
 
-    val pagingEvent: (Int) -> Unit
+    val pagingEvent: (ComicListFilter) -> Unit
     val pagingDataFlow: Flow<ComicsListState>
 
     init {
-        val actionStateFlow = MutableSharedFlow<Int>()
+        val actionStateFlow = MutableSharedFlow<ComicListFilter>()
         val filteredScrolled = actionStateFlow
+            .distinctUntilChanged { old, new ->
+                old.page == new.page || new.requireMoreData
+            }
             .shareIn(
                 scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000),
+                started = SharingStarted.WhileSubscribed(),
                 replay = 1
             )
 
         pagingDataFlow = filteredScrolled
-            .flatMapLatest { page ->
-                getComics(page)
+            .flatMapLatest { filter ->
+                getComics(filter.page)
             }.map { resource ->
                 when (resource) {
                     is Resource.Loading -> {

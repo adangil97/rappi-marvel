@@ -1,15 +1,14 @@
 package com.rappi.marvel.series.presentation.list
 
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
 import com.rappi.domain.series.dto.SerieDto
 import com.rappi.marvel.R
 import com.rappi.marvel.databinding.AdapterItemLoadingShimmerBinding
 import com.rappi.marvel.databinding.AdapterSeriesItemBinding
+import com.rappi.marvel.utils.load
 
 /**
  * Contiene la vista de item serie de marvel.
@@ -21,7 +20,7 @@ import com.rappi.marvel.databinding.AdapterSeriesItemBinding
  */
 class SeriesListAdapter(
     val items: MutableList<SeriesAdapterItemType>,
-    private val listener: (SerieDto) -> Unit
+    private val listener: (SerieDto, ImageView) -> Unit
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     companion object {
@@ -42,16 +41,16 @@ class SeriesListAdapter(
                 if (position != RecyclerView.NO_POSITION) {
                     val item = items[position]
                     if (item is SeriesAdapterItemType.SerieDtoType)
-                        listener(item.serieDto)
+                        listener(item.serieDto, binding.ivMarvelSerie)
                 }
             }
         }
 
         fun bind(item: SerieDto) {
-            Glide.with(binding.root.context)
-                .load(item.urlImage)
-                .placeholder(ColorDrawable(Color.GRAY))
-                .into(binding.ivMarvelSerie)
+            binding.ivMarvelSerie.apply {
+                load(item.urlImage)
+                transitionName = item.urlImage
+            }
             binding.tvTitle.text = item.title
         }
     }

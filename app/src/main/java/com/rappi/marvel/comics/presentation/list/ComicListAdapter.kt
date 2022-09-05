@@ -1,15 +1,14 @@
 package com.rappi.marvel.comics.presentation.list
 
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
 import com.rappi.domain.comics.dto.ComicDto
 import com.rappi.marvel.R
 import com.rappi.marvel.databinding.AdapterComicsItemBinding
 import com.rappi.marvel.databinding.AdapterItemLoadingShimmerBinding
+import com.rappi.marvel.utils.load
 
 /**
  * Contiene la vista de item comic de marvel.
@@ -21,7 +20,7 @@ import com.rappi.marvel.databinding.AdapterItemLoadingShimmerBinding
  */
 class ComicListAdapter(
     val items: MutableList<ComicsAdapterItemType>,
-    private val listener: (ComicDto) -> Unit
+    private val listener: (ComicDto, ImageView) -> Unit
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     companion object {
@@ -42,16 +41,16 @@ class ComicListAdapter(
                 if (position != RecyclerView.NO_POSITION) {
                     val item = items[position]
                     if (item is ComicsAdapterItemType.ComicDtoType)
-                        listener(item.comicDto)
+                        listener(item.comicDto, binding.ivMarvelComic)
                 }
             }
         }
 
         fun bind(item: ComicDto) {
-            Glide.with(binding.root.context)
-                .load(item.urlImage)
-                .placeholder(ColorDrawable(Color.GRAY))
-                .into(binding.ivMarvelComic)
+            binding.ivMarvelComic.apply {
+                load(item.urlImage)
+                transitionName = item.urlImage
+            }
             binding.tvTitle.text = item.title
         }
     }

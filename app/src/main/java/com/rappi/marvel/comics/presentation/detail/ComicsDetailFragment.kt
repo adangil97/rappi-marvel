@@ -1,8 +1,5 @@
 package com.rappi.marvel.comics.presentation.detail
 
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
-import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.View
@@ -15,16 +12,14 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.request.RequestListener
-import com.bumptech.glide.request.target.Target
+import androidx.transition.TransitionInflater
+import com.google.android.material.snackbar.Snackbar
 import com.rappi.domain.characters.dto.ModelDtoWrapper
 import com.rappi.domain.comics.dto.ComicDto
 import com.rappi.marvel.R
 import com.rappi.marvel.characters.CharacterAdapter
 import com.rappi.marvel.databinding.FragmentComicsDetailBinding
+import com.rappi.marvel.utils.load
 import com.rappi.marvel.utils.toHexColor
 import com.rappi.marvel.utils.viewBindings
 import dagger.hilt.android.AndroidEntryPoint
@@ -38,9 +33,19 @@ class ComicsDetailFragment : Fragment(R.layout.fragment_comics_detail) {
     private val args: ComicsDetailFragmentArgs by navArgs()
     private val viewModel: ComicDetailViewModel by viewModels()
     private lateinit var comicCharacterAdapter: CharacterAdapter
+    private var snack: Snackbar? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val transition = TransitionInflater.from(requireContext())
+            .inflateTransition(android.R.transition.move)
+        sharedElementEnterTransition = transition
+        sharedElementReturnTransition = transition
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        loadTransition()
         (requireActivity() as AppCompatActivity).supportActionBar?.hide()
         viewModel.onEvent(ComicsDetailEvent.OnGetComicById(args.id))
         viewModel.sideEffect.observe(viewLifecycleOwner) {
@@ -53,10 +58,42 @@ class ComicsDetailFragment : Fragment(R.layout.fragment_comics_detail) {
         }
     }
 
+    private fun loadTransition() {
+        binding.ivBackground.transitionName = args.urlImage
+        binding.ivBackground.load(args.urlImage) {
+            it?.let { drawable ->
+                viewModel.onEvent(
+                    ComicsDetailEvent.OnCalculateDominantColor(drawable)
+                )
+            }
+            startPostponedEnterTransition()
+        }
+    }
+
     private fun takeActionOn(state: ComicDetailState) {
         when (state) {
             is ComicDetailState.ShowComic -> loadUi(state.modelDtoWrapper)
             is ComicDetailState.ShowDominantColor -> showDominantColor(state.hexDominantColor)
+            is ComicDetailState.ShowErrorMessage -> {
+                binding.flLoading.isGone = true
+                binding.rvCharacters.isGone = true
+                binding.tvTitleCharacters.isGone = true
+                binding.tvDescriptionTitle.isGone = true
+                snack = Snackbar.make(
+                    requireView(),
+                    state.errorMessage,
+                    Snackbar.LENGTH_INDEFINITE
+                )
+                snack?.setAction("Reintentar") {
+                    snack?.dismiss()
+                    binding.flLoading.isGone = false
+                    binding.rvCharacters.isGone = false
+                    binding.tvTitleCharacters.isGone = false
+                    binding.tvDescriptionTitle.isGone = false
+                    viewModel.onEvent(ComicsDetailEvent.OnGetComicById(args.id))
+                }
+                snack?.show()
+            }
         }
     }
 
@@ -82,39 +119,6 @@ class ComicsDetailFragment : Fragment(R.layout.fragment_comics_detail) {
 
     private fun loadUi(wrapper: ModelDtoWrapper<ComicDto>) {
         binding.flLoading.isGone = true
-        Glide.with(binding.root.context)
-            .load(wrapper.data.urlImage)
-            .placeholder(ColorDrawable(Color.GRAY))
-            .addListener(
-                object : RequestListener<Drawable> {
-                    override fun onLoadFailed(
-                        e: GlideException?,
-                        model: Any?,
-                        target: Target<Drawable>?,
-                        isFirstResource: Boolean
-                    ): Boolean {
-                        return true
-                    }
-
-                    override fun onResourceReady(
-                        resource: Drawable?,
-                        model: Any?,
-                        target: Target<Drawable>?,
-                        dataSource: DataSource?,
-                        isFirstResource: Boolean
-                    ): Boolean {
-                        resource?.let { drawable ->
-                            binding.ivBackground.setImageDrawable(drawable)
-                            viewModel.onEvent(
-                                ComicsDetailEvent.OnCalculateDominantColor(drawable)
-                            )
-                        }
-                        return true
-                    }
-
-                }
-            )
-            .into(binding.ivBackground)
         binding.tvTitle.text = wrapper.data.title
         binding.tvDescription.text = wrapper.data.description
         if (wrapper.characters.isEmpty()) {
@@ -131,5 +135,10 @@ class ComicsDetailFragment : Fragment(R.layout.fragment_comics_detail) {
                 adapter = comicCharacterAdapter
             }
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        snack?.dismiss()
     }
 }

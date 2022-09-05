@@ -35,8 +35,15 @@ class ComicDetailViewModel @Inject constructor(
 
     private fun onGetComicById(id: Int) {
         viewModelScope.launch {
-            val comic = getComicById(id)
-            mSideEffect.value = ComicDetailState.ShowComic(comic)
+            try {
+                val comic = getComicById(id)
+                mSideEffect.value = ComicDetailState.ShowComic(comic)
+            } catch (exception: Exception) {
+                exception.printStackTrace()
+                mSideEffect.value = ComicDetailState.ShowErrorMessage(
+                    exception.message ?: exception.localizedMessage ?: "Unknown Error"
+                )
+            }
         }
     }
 

@@ -87,7 +87,7 @@ abstract class ComicsRemoteDataSource(
      *
      * @param urlDescription [String] url donde se encuentra el html con la descripción.
      */
-    fun getHtmlDescription(urlDescription: String): String? {
+    fun getHtmlDescription(urlDescription: String): String? = try {
         val html =
             Jsoup.connect(urlDescription)
                 .get()
@@ -96,6 +96,9 @@ abstract class ComicsRemoteDataSource(
             .body()
             .getElementById("page-content")?.child(0)?.child(3)?.child(1)?.child(0)?.child(1)
             ?.child(2)?.child(1)
-        return target?.text()
+        target?.text()
+    } catch (exception: Exception) {
+        exception.printStackTrace()
+        null
     }
 }

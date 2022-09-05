@@ -2,7 +2,6 @@ package com.rappi.marvel.comics.presentation.list
 
 import android.os.Bundle
 import android.text.InputType
-import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -14,17 +13,21 @@ import androidx.appcompat.widget.SearchView.OnQueryTextListener
 import androidx.core.content.ContextCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
+import com.rappi.domain.comics.remote.Comic
 import com.rappi.marvel.R
 import com.rappi.marvel.databinding.FragmentComicListBinding
+import com.rappi.marvel.utils.viewBindings
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -44,17 +47,7 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
     private var isSearching = false
     private var isPaging = true
     private var page = 0
-    private var mBinding: FragmentComicListBinding? = null
-    private val binding get() = requireNotNull(mBinding)
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        mBinding = FragmentComicListBinding.inflate(inflater, container, false)
-        return binding.root
-    }
+    private val binding: FragmentComicListBinding by viewBindings()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -63,27 +56,30 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
         showMenu()
         showInitialLoading()
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             // Obtiene los datos de paginación.
             viewModel.pagingDataFlow.collectLatest {
                 // Solo actualizamos la vista cuando no sea nula
-                if (mBinding != null)
-                    takeActionOn(it)
+                takeActionOn(it)
             }
         }
         // Obtenemos la primera pagina.
-        viewModel.pagingEvent(page)
+        viewModel.pagingEvent(ComicListFilter(page))
         viewModel.sideEffect.observe(viewLifecycleOwner) {
             it?.let { comicState ->
                 takeActionOn(comicState)
             }
         }
 
-        comicAdapter = ComicListAdapter(mutableListOf()) {
-            val action = ComicListFragmentDirections.actionComicListFragmentToComicsDetailFragment(
-                it.id
+        comicAdapter = ComicListAdapter(mutableListOf()) { comic, imageView ->
+            val extras = FragmentNavigatorExtras(
+                imageView to comic.urlImage
             )
-            findNavController().navigate(action)
+            val action = ComicListFragmentDirections.actionComicListFragmentToComicsDetailFragment(
+                comic.id,
+                comic.urlImage
+            )
+            findNavController().navigate(action, extras)
         }
         binding.rvComics.apply {
             layoutManager = GridLayoutManager(requireContext(), SPAN_COUNT)
@@ -103,7 +99,7 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
                     if (totalItemCount > 0 && endHasBeenReached && !isSearching) {
                         if (!isPaging) {
                             isPaging = true
-                            viewModel.pagingEvent(page)
+                            viewModel.pagingEvent(ComicListFilter(page))
                         }
                     }
                 }
@@ -112,8 +108,8 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
                 if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
-                    if (!isSearching)
-                        viewModel.pagingEvent(page)
+                    if (!isSearching && !isPaging)
+                        viewModel.pagingEvent(ComicListFilter(page, requireMoreData = true))
                 }
             }
         })
@@ -122,7 +118,7 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
             binding.tvError.isGone = true
             showInitialLoading()
             page = 0
-            viewModel.pagingEvent(page)
+            viewModel.pagingEvent(ComicListFilter(page))
         }
     }
 
@@ -170,6 +166,9 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
                     comicAdapter.items.size,
                     comicState.comics.size
                 )
+                (requireView().parent as? ViewGroup)?.doOnPreDraw {
+                    startPostponedEnterTransition()
+                }
             }
             ComicsListState.ShowEmpty -> {
                 hideInitialLoading()
@@ -260,7 +259,6 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
     }
 
     override fun onDestroyView() {
-        mBinding = null
         page = 0
         isPaging = true
         isSearching = false

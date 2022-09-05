@@ -17,4 +17,8 @@ sealed class SeriesDetailState {
     data class ShowDominantColor(
         val hexDominantColor: String
     ) : SeriesDetailState()
+
+    data class ShowErrorMessage(
+        val errorMessage: String
+    ) : SeriesDetailState()
 }
