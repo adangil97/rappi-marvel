@@ -9,17 +9,21 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.toColorInt
+import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
+import com.rappi.domain.characters.dto.ModelDtoWrapper
 import com.rappi.domain.series.dto.SerieDto
 import com.rappi.marvel.R
+import com.rappi.marvel.characters.CharacterAdapter
 import com.rappi.marvel.databinding.FragmentSeriesDetailBinding
 import com.rappi.marvel.utils.toHexColor
 import com.rappi.marvel.utils.viewBindings
@@ -33,6 +37,7 @@ class SeriesDetailFragment : Fragment(R.layout.fragment_series_detail) {
     private val binding: FragmentSeriesDetailBinding by viewBindings()
     private val args: SeriesDetailFragmentArgs by navArgs()
     private val viewModel: SeriesDetailViewModel by viewModels()
+    private lateinit var seriesCharacterAdapter: CharacterAdapter
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -53,7 +58,7 @@ class SeriesDetailFragment : Fragment(R.layout.fragment_series_detail) {
             is SeriesDetailState.ShowDominantColor -> {
                 showDominantColor(state.hexDominantColor)
             }
-            is SeriesDetailState.ShowSerie -> loadUi(state.serie)
+            is SeriesDetailState.ShowSerie -> loadUi(state.modelDtoWrapper)
         }
     }
 
@@ -77,9 +82,10 @@ class SeriesDetailFragment : Fragment(R.layout.fragment_series_detail) {
         requireActivity().window?.statusBarColor = "#$hexDominantColor".toColorInt()
     }
 
-    private fun loadUi(serie: SerieDto) {
+    private fun loadUi(wrapper: ModelDtoWrapper<SerieDto>) {
+        binding.flLoading.isGone = true
         Glide.with(binding.root.context)
-            .load(serie.urlImage)
+            .load(wrapper.data.urlImage)
             .placeholder(ColorDrawable(Color.GRAY))
             .addListener(
                 object : RequestListener<Drawable> {
@@ -111,7 +117,21 @@ class SeriesDetailFragment : Fragment(R.layout.fragment_series_detail) {
                 }
             )
             .into(binding.ivBackground)
-        binding.tvTitle.text = serie.title
-        binding.tvDescription.text = serie.description
+        binding.tvTitle.text = wrapper.data.title
+        binding.tvDescription.text = wrapper.data.description
+        if (wrapper.characters.isEmpty()) {
+            binding.tvTitleCharacters.isGone = true
+            binding.rvCharacters.isGone = true
+        } else {
+            seriesCharacterAdapter = CharacterAdapter(wrapper.characters)
+            binding.rvCharacters.apply {
+                layoutManager = LinearLayoutManager(
+                    requireContext(),
+                    LinearLayoutManager.HORIZONTAL,
+                    false
+                )
+                adapter = seriesCharacterAdapter
+            }
+        }
     }
 }

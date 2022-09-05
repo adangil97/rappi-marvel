@@ -2,10 +2,12 @@ package com.rappi.marvel.series.presentation.list
 
 import android.os.Bundle
 import android.text.InputType
+import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
@@ -16,7 +18,6 @@ import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
@@ -24,9 +25,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.rappi.marvel.R
 import com.rappi.marvel.databinding.FragmentSeriesListBinding
-import com.rappi.marvel.utils.viewBindings
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -40,12 +39,22 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
         private const val SPAN_COUNT = 3
     }
 
-    private val binding: FragmentSeriesListBinding by viewBindings()
     private val viewModel: SeriesListViewModel by viewModels()
     private lateinit var seriesAdapter: SeriesListAdapter
     private var isSearching = false
     private var isPaging = true
     private var page = 0
+    private var mBinding: FragmentSeriesListBinding? = null
+    private val binding get() = requireNotNull(mBinding)
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        mBinding = FragmentSeriesListBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -57,7 +66,9 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
         lifecycleScope.launch {
             // Obtiene los datos de paginación.
             viewModel.pagingDataFlow.collectLatest {
-                takeActionOn(it)
+                // Solo actualizamos la vista cuando no sea nula
+                if (mBinding != null)
+                    takeActionOn(it)
             }
         }
         // Obtenemos la primera pagina.
@@ -103,7 +114,8 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
                 if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
-                    viewModel.pagingEvent(page)
+                    if (!isSearching)
+                        viewModel.pagingEvent(page)
                 }
             }
         })
@@ -253,9 +265,10 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
     }
 
     override fun onDestroyView() {
-        lifecycle.coroutineScope.cancel()
+        mBinding = null
         page = 0
         isPaging = true
+        isSearching = false
         viewModel.onEvent(SeriesListEvent.OnClearSideEffect)
         super.onDestroyView()
     }

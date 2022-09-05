@@ -7,6 +7,7 @@
         <entry key="app/src/main/res/drawable/tab_icon_comics.xml" value="0.1325" />
         <entry key="app/src/main/res/drawable/tab_icon_series.xml" value="0.1195" />
         <entry key="app/src/main/res/layout/activity_marvel.xml" value="0.25" />
+        <entry key="app/src/main/res/layout/adapter_item_character.xml" value="0.246875" />
         <entry key="app/src/main/res/layout/adapter_item_loading_shimmer.xml" value="0.246875" />
         <entry key="app/src/main/res/layout/adapter_item_shimmer.xml" value="0.24791666666666667" />
         <entry key="app/src/main/res/layout/adapter_series_item.xml" value="0.24791666666666667" />

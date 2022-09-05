@@ -1,5 +1,6 @@
 package com.rappi.marvel.comics.presentation.detail
 
+import com.rappi.domain.characters.dto.ModelDtoWrapper
 import com.rappi.domain.comics.dto.ComicDto
 
 /**
@@ -10,7 +11,7 @@ import com.rappi.domain.comics.dto.ComicDto
 sealed class ComicDetailState {
 
     data class ShowComic(
-        val comic: ComicDto
+        val modelDtoWrapper: ModelDtoWrapper<ComicDto>
     ) : ComicDetailState()
 
     data class ShowDominantColor(

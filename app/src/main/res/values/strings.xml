@@ -9,4 +9,6 @@
     <string name="msg_empty">¡Nada que mostrar!</string>
     <string name="search">Buscar</string>
     <string name="msg_retry">Reintentar</string>
+    <string name="msg_characters">Personajes</string>
+    <string name="msg_character_description_title">Sinopsis</string>
 </resources>

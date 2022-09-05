@@ -2,10 +2,12 @@ package com.rappi.marvel.comics.presentation.list
 
 import android.os.Bundle
 import android.text.InputType
+import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
@@ -23,7 +25,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.rappi.marvel.R
 import com.rappi.marvel.databinding.FragmentComicListBinding
-import com.rappi.marvel.utils.viewBindings
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -38,12 +39,22 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
         private const val SPAN_COUNT = 3
     }
 
-    private val binding: FragmentComicListBinding by viewBindings()
     private val viewModel: ComicsListViewModel by viewModels()
     private lateinit var comicAdapter: ComicListAdapter
     private var isSearching = false
     private var isPaging = true
     private var page = 0
+    private var mBinding: FragmentComicListBinding? = null
+    private val binding get() = requireNotNull(mBinding)
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        mBinding = FragmentComicListBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -55,7 +66,9 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
         lifecycleScope.launch {
             // Obtiene los datos de paginación.
             viewModel.pagingDataFlow.collectLatest {
-                takeActionOn(it)
+                // Solo actualizamos la vista cuando no sea nula
+                if (mBinding != null)
+                    takeActionOn(it)
             }
         }
         // Obtenemos la primera pagina.
@@ -99,7 +112,8 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
                 if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
-                    viewModel.pagingEvent(page)
+                    if (!isSearching)
+                        viewModel.pagingEvent(page)
                 }
             }
         })
@@ -246,8 +260,10 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
     }
 
     override fun onDestroyView() {
+        mBinding = null
         page = 0
         isPaging = true
+        isSearching = false
         viewModel.onEvent(ComicsListEvent.OnClearSideEffect)
         super.onDestroyView()
     }

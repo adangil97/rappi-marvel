@@ -36,7 +36,7 @@ class SeriesDetailViewModel @Inject constructor(
     private fun onGetSerieById(id: Int) {
         viewModelScope.launch {
             val serie = getSerieById(id)
-            mSideEffect.value = SeriesDetailState.ShowSerie(serie.data)
+            mSideEffect.value = SeriesDetailState.ShowSerie(serie)
         }
     }
 

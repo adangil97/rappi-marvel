@@ -1,5 +1,6 @@
 package com.rappi.marvel.series.presentation.detail
 
+import com.rappi.domain.characters.dto.ModelDtoWrapper
 import com.rappi.domain.series.dto.SerieDto
 
 /**
@@ -10,7 +11,7 @@ import com.rappi.domain.series.dto.SerieDto
 sealed class SeriesDetailState {
 
     data class ShowSerie(
-        val serie: SerieDto
+        val modelDtoWrapper: ModelDtoWrapper<SerieDto>
     ) : SeriesDetailState()
 
     data class ShowDominantColor(
