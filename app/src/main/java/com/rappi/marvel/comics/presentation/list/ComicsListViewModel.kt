@@ -1,7 +1,5 @@
 package com.rappi.marvel.comics.presentation.list
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rappi.data.utils.Resource
@@ -9,14 +7,10 @@ import com.rappi.usecases.comics.GetAllComics
 import com.rappi.usecases.comics.GetComics
 import com.rappi.usecases.comics.SearchComics
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -26,71 +20,16 @@ import javax.inject.Inject
  * @author Adán Castillo.
  */
 @HiltViewModel
-@OptIn(ExperimentalCoroutinesApi::class)
 class ComicsListViewModel @Inject constructor(
     private val getComics: GetComics,
     private val searchComics: SearchComics,
     private val getAllComics: GetAllComics
 ) : ViewModel() {
-    private val mSideEffect = MutableLiveData<ComicsListState?>()
-    val sideEffect: LiveData<ComicsListState?> get() = mSideEffect
-
-    val pagingEvent: (ComicListFilter) -> Unit
-    val pagingDataFlow: Flow<ComicsListState>
-
-    init {
-        val actionStateFlow = MutableSharedFlow<ComicListFilter>()
-        val filteredScrolled = actionStateFlow
-            .distinctUntilChanged { old, new ->
-                old.page == new.page || new.requireMoreData
-            }
-            .shareIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(),
-                replay = 1
-            )
-
-        pagingDataFlow = filteredScrolled
-            .flatMapLatest { filter ->
-                getComics(filter.page)
-            }.map { resource ->
-                when (resource) {
-                    is Resource.Loading -> {
-                        ComicsListState.ShowLoading
-                    }
-                    is Resource.Success -> {
-                        ComicsListState.ShowComics(
-                            resource.data.comics.map {
-                                ComicsAdapterItemType.ComicDtoType(it)
-                            }
-                        )
-                    }
-                    is Resource.Error -> {
-                        if (resource.data.page == 0) {
-                            ComicsListState.ShowPlaceholderError(
-                                resource.throwable.localizedMessage ?: resource.throwable.message
-                                ?: "Unknown Error"
-                            )
-                        } else {
-                            ComicsListState.ShowGenericError(
-                                resource.throwable.localizedMessage ?: resource.throwable.message
-                                ?: "Unknown Error"
-                            )
-                        }
-                    }
-                }
-            }
-
-        pagingEvent = { action ->
-            viewModelScope.launch { actionStateFlow.emit(action) }
-        }
-    }
+    private val mSideEffect: MutableSharedFlow<ComicsListState> = MutableSharedFlow()
+    val sideEffect = mSideEffect.asSharedFlow()
 
     fun onEvent(event: ComicsListEvent) {
         when (event) {
-            ComicsListEvent.OnClearSideEffect -> {
-                mSideEffect.value = null
-            }
             is ComicsListEvent.OnSearchComics -> {
                 if (event.query.isNotEmpty()) {
                     onSearchComics(event.query)
@@ -98,6 +37,49 @@ class ComicsListViewModel @Inject constructor(
                     onGetAllComics()
                 }
             }
+            is ComicsListEvent.OnGetComics -> onGetComics(event.page)
+        }
+    }
+
+    private fun onGetComics(page: Int) {
+        viewModelScope.launch {
+            getComics(page)
+                .distinctUntilChanged()
+                .collectLatest { resource ->
+                    when (resource) {
+                        is Resource.Loading -> {
+                            mSideEffect.emit(ComicsListState.ShowLoading)
+                        }
+                        is Resource.Success -> {
+                            mSideEffect.emit(
+                                ComicsListState.ShowComics(
+                                    resource.data.comics.map {
+                                        ComicsAdapterItemType.ComicDtoType(it)
+                                    }
+                                )
+                            )
+                        }
+                        is Resource.Error -> {
+                            if (resource.data.page == 0) {
+                                mSideEffect.emit(
+                                    ComicsListState.ShowPlaceholderError(
+                                        resource.throwable.localizedMessage
+                                            ?: resource.throwable.message
+                                            ?: "Unknown Error"
+                                    )
+                                )
+                            } else {
+                                mSideEffect.emit(
+                                    ComicsListState.ShowGenericError(
+                                        resource.throwable.localizedMessage
+                                            ?: resource.throwable.message
+                                            ?: "Unknown Error"
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
         }
     }
 
@@ -105,13 +87,17 @@ class ComicsListViewModel @Inject constructor(
         viewModelScope.launch {
             val comics = getAllComics()
             if (comics.isNotEmpty())
-                mSideEffect.value = ComicsListState.ShowSearchComics(
-                    comics.map {
-                        ComicsAdapterItemType.ComicDtoType(it)
-                    }
+                mSideEffect.emit(
+                    ComicsListState.ShowSearchComics(
+                        comics.map {
+                            ComicsAdapterItemType.ComicDtoType(it)
+                        }
+                    )
                 )
             else
-                mSideEffect.value = ComicsListState.ShowEmpty
+                mSideEffect.emit(
+                    ComicsListState.ShowEmpty
+                )
         }
     }
 
@@ -119,13 +105,17 @@ class ComicsListViewModel @Inject constructor(
         viewModelScope.launch {
             val comics = searchComics(query)
             if (comics.isNotEmpty())
-                mSideEffect.value = ComicsListState.ShowSearchComics(
-                    comics.map {
-                        ComicsAdapterItemType.ComicDtoType(it)
-                    }
+                mSideEffect.emit(
+                    ComicsListState.ShowSearchComics(
+                        comics.map {
+                            ComicsAdapterItemType.ComicDtoType(it)
+                        }
+                    )
                 )
             else
-                mSideEffect.value = ComicsListState.ShowEmpty
+                mSideEffect.emit(
+                    ComicsListState.ShowEmpty
+                )
         }
     }
 }

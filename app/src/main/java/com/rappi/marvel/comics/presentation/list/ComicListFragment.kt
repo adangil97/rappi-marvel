@@ -19,12 +19,12 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
-import com.rappi.domain.comics.remote.Comic
 import com.rappi.marvel.R
 import com.rappi.marvel.databinding.FragmentComicListBinding
 import com.rappi.marvel.utils.viewBindings
@@ -57,19 +57,16 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
         showMenu()
         showInitialLoading()
         viewLifecycleOwner.lifecycleScope.launch {
-            // Obtiene los datos de paginación.
-            viewModel.pagingDataFlow.collectLatest {
-                // Solo actualizamos la vista cuando no sea nula
-                takeActionOn(it)
+            viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                // Obtiene los datos de paginación.
+                viewModel.sideEffect.collectLatest {
+                    // Solo actualizamos la vista cuando no sea nula
+                    takeActionOn(it)
+                }
             }
         }
         // Obtenemos la primera pagina.
-        viewModel.pagingEvent(ComicListFilter(page))
-        viewModel.sideEffect.observe(viewLifecycleOwner) {
-            it?.let { comicState ->
-                takeActionOn(comicState)
-            }
-        }
+        viewModel.onEvent(ComicsListEvent.OnGetComics(page))
 
         comicAdapter = ComicListAdapter(mutableListOf()) { comic, imageView ->
             val extras = FragmentNavigatorExtras(
@@ -99,7 +96,7 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
                     if (totalItemCount > 0 && endHasBeenReached && !isSearching) {
                         if (!isPaging) {
                             isPaging = true
-                            viewModel.pagingEvent(ComicListFilter(page))
+                            viewModel.onEvent(ComicsListEvent.OnGetComics(page))
                         }
                     }
                 }
@@ -109,7 +106,7 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
                 super.onScrollStateChanged(recyclerView, newState)
                 if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
                     if (!isSearching && !isPaging)
-                        viewModel.pagingEvent(ComicListFilter(page, requireMoreData = true))
+                        viewModel.onEvent(ComicsListEvent.OnGetComics(page))
                 }
             }
         })
@@ -118,7 +115,7 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
             binding.tvError.isGone = true
             showInitialLoading()
             page = 0
-            viewModel.pagingEvent(ComicListFilter(page))
+            viewModel.onEvent(ComicsListEvent.OnGetComics(page))
         }
     }
 
@@ -262,7 +259,6 @@ class ComicListFragment : Fragment(R.layout.fragment_comic_list), OnQueryTextLis
         page = 0
         isPaging = true
         isSearching = false
-        viewModel.onEvent(ComicsListEvent.OnClearSideEffect)
         super.onDestroyView()
     }
 

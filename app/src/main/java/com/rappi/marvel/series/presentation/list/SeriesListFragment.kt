@@ -19,6 +19,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
@@ -58,19 +59,16 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
         postponeEnterTransition()
 
         viewLifecycleOwner.lifecycleScope.launch {
-            // Obtiene los datos de paginación.
-            viewModel.pagingDataFlow.collectLatest {
-                // Solo actualizamos la vista cuando no sea nula
-                takeActionOn(it)
+            viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                // Obtiene los datos de paginación.
+                viewModel.sideEffect.collectLatest {
+                    // Solo actualizamos la vista cuando no sea nula
+                    takeActionOn(it)
+                }
             }
         }
         // Obtenemos la primera pagina.
-        viewModel.pagingEvent(SeriesListFilter(page))
-        viewModel.sideEffect.observe(viewLifecycleOwner) {
-            it?.let { seriesState ->
-                takeActionOn(seriesState)
-            }
-        }
+        viewModel.onEvent(SeriesListEvent.OnGetSeries(page))
 
         seriesAdapter = SeriesListAdapter(mutableListOf()) { serie, imageView ->
             val extras = FragmentNavigatorExtras(
@@ -102,7 +100,7 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
                     if (totalItemCount > 0 && endHasBeenReached && !isSearching) {
                         if (!isPaging) {
                             isPaging = true
-                            viewModel.pagingEvent(SeriesListFilter(page))
+                            viewModel.onEvent(SeriesListEvent.OnGetSeries(page))
                         }
                     }
                 }
@@ -112,7 +110,7 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
                 super.onScrollStateChanged(recyclerView, newState)
                 if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
                     if (!isSearching && !isPaging)
-                        viewModel.pagingEvent(SeriesListFilter(page, requireMoreData = true))
+                        viewModel.onEvent(SeriesListEvent.OnGetSeries(page))
                 }
             }
         })
@@ -121,7 +119,7 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
             binding.tvError.isGone = true
             showInitialLoading()
             page = 0
-            viewModel.pagingEvent(SeriesListFilter(page))
+            viewModel.onEvent(SeriesListEvent.OnGetSeries(page))
         }
     }
 
@@ -268,7 +266,6 @@ class SeriesListFragment : Fragment(R.layout.fragment_series_list), OnQueryTextL
         page = 0
         isPaging = true
         isSearching = false
-        viewModel.onEvent(SeriesListEvent.OnClearSideEffect)
         super.onDestroyView()
     }
 
