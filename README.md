@@ -31,7 +31,7 @@
   <li>
     <p>Data</p>
     <ul>
-      <li><p>DataSources: Contiene las definiciones de los contratos de los flujos de datos disponibles</p></li>
+      <li><p>DataSources: Contiene las definiciones de los contratos de las fuentes de datos disponibles</p></li>
       <li>
         <p>
           Repositories: Son los encargados de validar cuando es apropiado usar cual data source o bien el mezclado de datos que los datasources proveen
@@ -42,11 +42,11 @@
   <li>
     <p>Framework (app)</p>
     <ul>
-      <li><p>DataSources: Contiene las implementaciones de los flujos de datos disponibles (Pueden ser remotos o locales, depende la abstracción)</p></li>
+      <li><p>DataSources: Contiene las implementaciones de las fuentes de datos disponibles (Pueden ser remotos o locales, depende la abstracción)</p></li>
       <li><p>Module: Inyección de dependencias del repositorie de Data, y los DataSources a utilizar</p></li>
     </ul>
   </li>
 <ol>
-
-<H2>Posdata <p>Internamente cada clase esta documentada</p></H2>  
+<p>
+<H2>PD:</H2><p>Internamente cada clase esta documentada</p> 
   
